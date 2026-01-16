@@ -664,6 +664,8 @@ function editTrainingExercise(dayId, i){
   document.getElementById("exerciseRepsInput").value = ex.reps || "";
   document.getElementById("exerciseHasWeightInput").checked = ex.hasWeight || false;
   
+  // Показываем форму редактирования
+  document.getElementById("exerciseEditForm").classList.add("active");
   document.getElementById("exerciseNameInput").focus();
   
   renderDaySelector();
@@ -1444,6 +1446,9 @@ function editDay(index) {
   editingDayIndex = index;
   document.getElementById("dayNameInput").value = day.title || "";
   document.getElementById("dayWeekdaySelect").value = day.weekday || "1";
+  
+  // Показываем форму редактирования
+  document.getElementById("dayEditForm").classList.add("active");
   document.getElementById("dayNameInput").focus();
 }
 
