@@ -724,7 +724,7 @@ let right = ``;
 
 if (ex.hasWeight) {
   right += `
-    <input type="number" class="weight-input" data-id="${ex.id}" step="0.5" placeholder="кг">
+    <input type="text" class="weight-input" data-id="${ex.id}" placeholder="">
     <span class="last-weight" data-id="${ex.id}"></span>
   `;
 } else {
