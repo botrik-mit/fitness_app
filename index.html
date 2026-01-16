@@ -49,29 +49,79 @@
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
-    padding: 16px;
+    padding: 0;
     background: var(--bg);
     color: var(--fg);
     transition: 0.3s;
     font-size: 16px;
     line-height: 1.4;
-    padding-bottom: 120px;
   }
 
-  h1, h2, h3 { margin: 0 0 16px; font-weight: 700; }
-  h1 { font-size: 1.8rem; }
-  h2 { font-size: 1.4rem; }
+  /* AUTH SCREEN */
+  #authScreen {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: var(--bg);
+  }
+
+  .auth-card {
+    background: var(--card);
+    padding: 40px 24px;
+    border-radius: 32px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+  }
+
+  body.dark .auth-card {
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+
+  #authScreen h1 {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+    font-weight: 800;
+  }
+
+  #authScreen p {
+    font-size: 1rem;
+    opacity: 0.7;
+    margin-bottom: 32px;
+  }
+
+  #loginBtn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 24px;
+    transition: 0.2s;
+  }
+
+  #loginBtn:active { transform: scale(0.97); }
 
   /* NAVIGATION */
   nav {
     position: fixed;
     bottom: 20px;
-    left: 16px;
-    right: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 450px;
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    padding: 8px;
+    padding: 6px;
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -98,12 +148,12 @@
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    opacity: 0.5;
+    opacity: 0.4;
     transition: 0.2s;
   }
 
   nav button.active { opacity: 1; color: var(--accent); }
-  nav button::before { font-size: 20px; }
+  nav button::before { font-size: 18px; }
 
   .nav-today::before { content: "📅"; }
   .nav-training::before { content: "🏋️"; }
@@ -117,6 +167,7 @@
   .container {
     max-width: 600px;
     margin: 0 auto;
+    padding: 24px 16px 120px;
     display: none;
   }
 
@@ -297,15 +348,16 @@
 
 <!-- AUTH SCREEN -->
 <div id="authScreen">
-  <h1>🏋️ План Тренировок</h1>
-  <p style="font-size: 1.1em; margin: 20px 0; line-height: 1.6;">
-    Персональный план тренировок на 12 недель с отслеживанием прогресса
-  </p>
-  <button id="loginBtn">Войти</button>
-  <p style="margin-top: 25px; font-size: 0.95em; color: #666; line-height: 1.6; max-width: 350px; margin-left: auto; margin-right: auto;">
-    💡 Придумайте свой уникальный логин.<br>
-    Он понадобится вам для сохранения тренировок и доступа к ним с любого устройства.
-  </p>
+  <div class="auth-card">
+    <h1>🏋️ План Тренировок</h1>
+    <p>
+      Персональный план тренировок на 12 недель с отслеживанием прогресса
+    </p>
+    <button id="loginBtn">Войти</button>
+    <div style="font-size: 0.9rem; color: #888; text-align: left; background: var(--day-bg); padding: 16px; border-radius: 16px;">
+      💡 Придумайте свой уникальный логин. Он понадобится для сохранения тренировок на любом устройстве.
+    </div>
+  </div>
 </div>
 
 <!-- APP CONTAINER -->
@@ -324,7 +376,7 @@
 <!-- TRAINING -->
 <div id="training" class="container">
 
-  <button onclick="nextWeek()" class="btn btn-primary next-week-btn">Следующая неделя</button>
+  <button onclick="nextWeek()" class="btn btn-primary next-week-btn" style="width:100%; margin-bottom:24px; padding:16px;">Следующая неделя</button>
 <div id="trainingEditor">
 
   <h2>Дни тренировок</h2>
@@ -405,31 +457,31 @@
   <button id="editSupplementsBtn" class="btn btn-secondary" style="width:100%; margin-bottom:20px;">✏ Редактировать</button>
 
   <div style="display:grid; gap:20px;">
-    <div class="supplement-card">
+    <div class="supplement-card" style="background:var(--card); padding:16px; border-radius:20px; border:1px solid var(--border);">
       <h3 style="margin-bottom:8px;">🌅 Завтрак</h3>
       <textarea id="supplementBreakfastText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
       <div id="supplementBreakfastView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
     </div>
 
-    <div class="supplement-card">
+    <div class="supplement-card" style="background:var(--card); padding:16px; border-radius:20px; border:1px solid var(--border);">
       <h3 style="margin-bottom:8px;">🍽 Обед</h3>
       <textarea id="supplementLunchText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
       <div id="supplementLunchView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
     </div>
 
-    <div class="supplement-card">
+    <div class="supplement-card" style="background:var(--card); padding:16px; border-radius:20px; border:1px solid var(--border);">
       <h3 style="margin-bottom:8px;">🍴 Ужин</h3>
       <textarea id="supplementDinnerText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
       <div id="supplementDinnerView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
     </div>
 
-    <div class="supplement-card">
+    <div class="supplement-card" style="background:var(--card); padding:16px; border-radius:20px; border:1px solid var(--border);">
       <h3 style="margin-bottom:8px;">💪 Перед тренировкой</h3>
       <textarea id="supplementPreWorkoutText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
       <div id="supplementPreWorkoutView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
     </div>
 
-    <div class="supplement-card">
+    <div class="supplement-card" style="background:var(--card); padding:16px; border-radius:20px; border:1px solid var(--border);">
       <h3 style="margin-bottom:8px;">🏋️ После тренировки</h3>
       <textarea id="supplementPostWorkoutText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
       <div id="supplementPostWorkoutView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>

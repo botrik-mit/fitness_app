@@ -24,7 +24,7 @@ function checkAuth() {
 }
 
 function showAuth() {
-  document.getElementById('authScreen').style.display = 'block';
+  document.getElementById('authScreen').style.display = 'flex';
   document.getElementById('appContainer').style.display = 'none';
 }
 
@@ -326,8 +326,10 @@ function applyLoadedData() {
   
   if (appData.nutritionText) {
     nutritionData = appData.nutritionText;
-    nutritionText.value = nutritionData;
-    nutritionView.textContent = nutritionData;
+    const nutritionTextElem = document.getElementById("nutritionText");
+    const nutritionViewElem = document.getElementById("nutritionView");
+    if (nutritionTextElem) nutritionTextElem.value = nutritionData;
+    if (nutritionViewElem) nutritionViewElem.textContent = nutritionData;
   }
   
   loadSupplements();
@@ -407,9 +409,12 @@ function showPage(id){
   }
   
   if (id !== "nutrition") {
-    nutritionText.style.display = "none";
-    nutritionView.style.display = "block";
-    editNutritionBtn.textContent = "✏ Редактировать";
+    const nutritionTextElem = document.getElementById("nutritionText");
+    const nutritionViewElem = document.getElementById("nutritionView");
+    const editNutritionBtnElem = document.getElementById("editNutritionBtn");
+    if (nutritionTextElem) nutritionTextElem.style.display = "none";
+    if (nutritionViewElem) nutritionViewElem.style.display = "block";
+    if (editNutritionBtnElem) editNutritionBtnElem.textContent = "✏ Редактировать";
   }
 }
 
@@ -734,36 +739,34 @@ daysToRender.forEach(day => {
       let weightHTML = '';
       if (ex.hasWeight) {
         weightHTML = `
-          <div class="input-group">
-            <span style="font-size:0.75rem; font-weight:700; margin-right:8px; opacity:0.5;">КГ</span>
-            <input type="number" class="weight-input" data-id="${ex.id}" step="0.5" placeholder="0" style="width:100%; border:none; background:transparent; color:var(--fg); font-weight:700; outline:none; padding:0; font-size:1.1rem;">
+          <div class="input-group" style="padding: 6px 10px;">
+            <input type="number" class="weight-input" data-id="${ex.id}" step="0.5" placeholder="0" style="width:50px; border:none; background:transparent; color:var(--fg); font-weight:700; outline:none; padding:0; font-size:1rem; text-align:center;">
+            <span style="font-size:0.7rem; opacity:0.5; margin-left:2px;">кг</span>
           </div>
-          <div style="font-size:0.7rem; color:#888; margin-top:6px; text-align:center; font-weight:500;">
-             БЫЛО: <span class="last-weight" data-id="${ex.id}" style="font-weight:700; color:var(--fg);">-</span>
+          <div style="font-size:0.6rem; color:#888; margin-top:2px; text-align:center;">
+             Был: <span class="last-weight" data-id="${ex.id}" style="font-weight:700; color:var(--fg);">-</span>
           </div>
         `;
       }
 
       row.innerHTML = `
-        <label style="cursor:pointer; display:flex; align-items:center; width:100%; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border);">
-          <input type="checkbox" class="task" data-id="${ex.id}" style="width:26px; height:26px; cursor:pointer; accent-color:var(--accent); margin-right:14px; flex-shrink:0; border-radius:6px;">
-          <div style="font-weight:700; font-size:1.1rem; line-height:1.2;">${title}</div>
+        <label style="cursor:pointer; display:flex; align-items:center; width:100%; margin-bottom:12px;">
+          <input type="checkbox" class="task" data-id="${ex.id}" style="width:22px; height:22px; cursor:pointer; accent-color:var(--accent); margin-right:12px; flex-shrink:0;">
+          <div style="font-weight:700; font-size:1rem; line-height:1.2;">${title}</div>
         </label>
-        <div style="display: grid; grid-template-columns: ${ex.hasWeight ? '1fr 1fr 48px' : '1fr 48px'}; gap: 12px; align-items: flex-start;">
-          ${ex.hasWeight ? `<div style="min-width: 0;">${weightHTML}</div>` : ''}
-          <div style="min-width: 0;">
-            <select class="rpe-select" data-id="${ex.id}" style="width:100%; height:44px; padding:0 12px; border-radius:12px; border:1px solid var(--border); background:var(--day-bg); color:var(--fg); font-size:0.95rem; font-weight:700; -webkit-appearance:none;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          ${ex.hasWeight ? `<div style="width: 100px; flex-shrink: 0;">${weightHTML}</div>` : ''}
+          <div style="width: 80px; flex-shrink: 0;">
+            <select class="rpe-select" data-id="${ex.id}" style="width:100%; height:40px; padding:0 8px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--fg); font-size:0.9rem; font-weight:700; -webkit-appearance:none; text-align:center;">
               <option value="">RPE</option>
               ${[...Array(10)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
             </select>
-            <div style="font-size:0.7rem; text-align:center; margin-top:6px; color:#888; font-weight:500;">УСИЛИЕ</div>
           </div>
-          <div>
-            <button class="comment-btn" data-id="${ex.id}" style="width:48px; height:44px; border-radius:12px; border:1px solid var(--border); background:var(--day-bg); cursor:pointer; display:flex; align-items:center; justify-content:center; position:relative;">
-              <span style="font-size:1.4rem;">💬</span>
-              <span class="comment-star" style="position:absolute; top:-4px; right:-4px; width:12px; height:12px; background:var(--accent); border-radius:50%; border:2px solid var(--card); visibility:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></span>
+          <div style="margin-left: auto;">
+            <button class="comment-btn" data-id="${ex.id}" style="width:40px; height:40px; border-radius:10px; border:1px solid var(--border); background:var(--bg); cursor:pointer; display:flex; align-items:center; justify-content:center; position:relative;">
+              <span style="font-size:1.2rem;">💬</span>
+              <span class="comment-star" style="position:absolute; top:-2px; right:-2px; width:10px; height:10px; background:var(--accent); border-radius:50%; border:2px solid var(--card); visibility:hidden;"></span>
             </button>
-            <div style="font-size:0.7rem; text-align:center; margin-top:6px; color:#888; font-weight:500;">ИНФО</div>
           </div>
         </div>
       `;
@@ -972,32 +975,34 @@ function renderSupplements() {
 
 const editSupplementsBtn = document.getElementById("editSupplementsBtn");
 
-editSupplementsBtn.onclick = () => {
-  const isEditing = document.getElementById("supplementBreakfastText").style.display === "block";
+if (editSupplementsBtn) {
+  editSupplementsBtn.onclick = () => {
+    const isEditing = document.getElementById("supplementBreakfastText").style.display === "block";
 
-  if (isEditing) {
-    saveSupplements();
-    renderSupplements();
-    
-    supplementSections.forEach(section => {
-      const textarea = document.getElementById(section.textId);
-      const view = document.getElementById(section.viewId);
-      if (textarea) textarea.style.display = "none";
-      if (view) view.style.display = "block";
-    });
-    
-    editSupplementsBtn.textContent = "✏ Редактировать";
-  } else {
-    supplementSections.forEach(section => {
-      const textarea = document.getElementById(section.textId);
-      const view = document.getElementById(section.viewId);
-      if (textarea) textarea.style.display = "block";
-      if (view) view.style.display = "none";
-    });
-    
-    editSupplementsBtn.textContent = "💾 Сохранить";
-  }
-};
+    if (isEditing) {
+      saveSupplements();
+      renderSupplements();
+      
+      supplementSections.forEach(section => {
+        const textarea = document.getElementById(section.textId);
+        const view = document.getElementById(section.viewId);
+        if (textarea) textarea.style.display = "none";
+        if (view) view.style.display = "block";
+      });
+      
+      editSupplementsBtn.textContent = "✏ Редактировать";
+    } else {
+      supplementSections.forEach(section => {
+        const textarea = document.getElementById(section.textId);
+        const view = document.getElementById(section.viewId);
+        if (textarea) textarea.style.display = "block";
+        if (view) view.style.display = "none";
+      });
+      
+      editSupplementsBtn.textContent = "💾 Сохранить";
+    }
+  };
+}
 
 /* ==========================================
    ПИТАНИЕ
@@ -1013,24 +1018,26 @@ const defaultNutrition = `Белок: 1.6–2 г/кг
 
 let nutritionData = defaultNutrition;
 
-editNutritionBtn.onclick = () => {
-  const isEditing = nutritionText.style.display === "block";
+if (editNutritionBtn) {
+  editNutritionBtn.onclick = () => {
+    const isEditing = nutritionText.style.display === "block";
 
-  if (isEditing) {
-    nutritionData = nutritionText.value.trim();
-    appData.nutritionText = nutritionData;
-    saveToServer();
-    nutritionView.textContent = nutritionData;
+    if (isEditing) {
+      nutritionData = nutritionText.value.trim();
+      appData.nutritionText = nutritionData;
+      saveToServer();
+      nutritionView.textContent = nutritionData;
 
-    nutritionText.style.display = "none";
-    nutritionView.style.display = "block";
-    editNutritionBtn.textContent = "✏ Редактировать";
-  } else {
-    nutritionText.style.display = "block";
-    nutritionView.style.display = "none";
-    editNutritionBtn.textContent = "💾 Сохранить";
-  }
-};
+      nutritionText.style.display = "none";
+      nutritionView.style.display = "block";
+      editNutritionBtn.textContent = "✏ Редактировать";
+    } else {
+      nutritionText.style.display = "block";
+      nutritionView.style.display = "none";
+      editNutritionBtn.textContent = "💾 Сохранить";
+    }
+  };
+}
 
 function initRPE() {
   if (!week) return;
