@@ -1257,11 +1257,11 @@ function renderTotalStats() {
     const height = maxPercent > 0 ? (percent / maxPercent * 100) : 0;
     const color = percent >= 80 ? "#2ecc71" : percent >= 50 ? "#f1c40f" : "#e74c3c";
     progressChart += `
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-        <div style="width:30px;height:80px;background:#ddd;border-radius:4px;position:relative;overflow:hidden;">
-          <div style="position:absolute;bottom:0;width:100%;height:${height}%;background:${color};border-radius:4px;"></div>
+      <div class="progress-chart-bar">
+        <div style="width:30px;height:80px;background:rgba(128,128,128,0.15);border-radius:4px;position:relative;overflow:hidden;">
+          <div style="position:absolute;bottom:0;width:100%;height:${height}%;background:${color};border-radius:4px;transition:0.3s;"></div>
         </div>
-        <span style="font-size:0.75em;">${index + 1}</span>
+        <span style="font-size:0.75em;font-weight:600;">${index + 1}</span>
       </div>
     `;
   });
@@ -1315,7 +1315,7 @@ function renderTotalStats() {
       margin-bottom: 16px;
     ">
       <h3>📈 Прогресс по неделям</h3>
-      <div style="display:flex;gap:8px;justify-content:center;align-items:flex-end;margin:16px 0;min-height:120px;">
+      <div class="progress-chart-container">
         ${progressChart || "<div style='opacity:0.6;'>Нет данных</div>"}
       </div>
     </div>
