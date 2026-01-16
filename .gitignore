@@ -1,0 +1,18 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Временные файлы
+*.tmp
+*.swp
+*~
+
+# Node modules (если будете использовать)
+node_modules/
+package-lock.json
