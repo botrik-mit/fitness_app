@@ -5,7 +5,7 @@ const SUPABASE_URL = 'https://ifzksmsmahbleakswryr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmemtzbXNtYWhibGVha3N3cnlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NjM0NzksImV4cCI6MjA4NDEzOTQ3OX0.Kxk6bozJPG35nbSFC6Z2rM7JLQ107M2g6eHdQXFcAAQ';
 
 // Инициализация Supabase клиента
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ==========================================
    АУТЕНТИФИКАЦИЯ
@@ -67,7 +67,7 @@ async function loadFromServer() {
   
   try {
     // Загружаем данные из Supabase
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('users_data')
       .select('data')
       .eq('email', userEmail)
@@ -114,7 +114,7 @@ async function saveToServer() {
     
     try {
       // Пробуем обновить существующую запись
-      const { data: existingData, error: selectError } = await supabase
+      const { data: existingData, error: selectError } = await supabaseClient
         .from('users_data')
         .select('id')
         .eq('email', userEmail)
@@ -124,7 +124,7 @@ async function saveToServer() {
       
       if (existingData) {
         // Обновляем существующую запись
-        result = await supabase
+        result = await supabaseClient
           .from('users_data')
           .update({ 
             data: appData,
@@ -133,7 +133,7 @@ async function saveToServer() {
           .eq('email', userEmail);
       } else {
         // Создаем новую запись
-        result = await supabase
+        result = await supabaseClient
           .from('users_data')
           .insert([{ 
             email: userEmail, 
@@ -162,7 +162,7 @@ async function saveToServerImmediately() {
     console.log('💾 Немедленное сохранение данных в Supabase...');
     
     // Пробуем обновить существующую запись
-    const { data: existingData, error: selectError } = await supabase
+    const { data: existingData, error: selectError } = await supabaseClient
       .from('users_data')
       .select('id')
       .eq('email', userEmail)
@@ -172,7 +172,7 @@ async function saveToServerImmediately() {
     
     if (existingData) {
       // Обновляем существующую запись
-      result = await supabase
+      result = await supabaseClient
         .from('users_data')
         .update({ 
           data: appData,
@@ -181,7 +181,7 @@ async function saveToServerImmediately() {
         .eq('email', userEmail);
     } else {
       // Создаем новую запись
-      result = await supabase
+      result = await supabaseClient
         .from('users_data')
         .insert([{ 
           email: userEmail, 
