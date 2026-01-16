@@ -410,10 +410,23 @@ function saveTrainingData(){
 let editingDayIndex = null;
 
 document.getElementById("addDayBtn").onclick = () => {
-  editingDayIndex = null;
-  document.getElementById("dayNameInput").value = "";
-  document.getElementById("dayWeekdaySelect").value = "1";
-  document.getElementById("dayNameInput").focus();
+  const form = document.getElementById("dayEditForm");
+  const isVisible = form.classList.contains("active");
+  
+  if (isVisible) {
+    // Скрываем форму
+    form.classList.remove("active");
+    document.getElementById("dayNameInput").value = "";
+    document.getElementById("dayWeekdaySelect").value = "1";
+    editingDayIndex = null;
+  } else {
+    // Показываем форму
+    editingDayIndex = null;
+    document.getElementById("dayNameInput").value = "";
+    document.getElementById("dayWeekdaySelect").value = "1";
+    form.classList.add("active");
+    setTimeout(() => document.getElementById("dayNameInput").focus(), 100);
+  }
 };
 
 function saveDay() {
@@ -444,6 +457,8 @@ function saveDay() {
 
   afterDataChange();
   
+  // Скрываем и очищаем форму после сохранения
+  document.getElementById("dayEditForm").classList.remove("active");
   document.getElementById("dayNameInput").value = "";
   document.getElementById("dayWeekdaySelect").value = "1";
   editingDayIndex = null;
@@ -470,6 +485,7 @@ document.getElementById("dayWeekdaySelect").addEventListener("keypress", (e) => 
 });
 
 document.getElementById("cancelDayBtn").onclick = () => {
+  document.getElementById("dayEditForm").classList.remove("active");
   document.getElementById("dayNameInput").value = "";
   document.getElementById("dayWeekdaySelect").value = "1";
   editingDayIndex = null;
@@ -509,17 +525,31 @@ function renderExerciseEditor() {
 let editingExerciseIndex = null;
 
 document.getElementById("addExerciseBtn").onclick = () => {
-  editingExerciseIndex = null;
-  document.getElementById("exerciseNameInput").value = "";
-  document.getElementById("exerciseSetsInput").value = "";
-  document.getElementById("exerciseRepsInput").value = "";
-  document.getElementById("exerciseHasWeightInput").checked = false;
-  document.getElementById("exerciseNameInput").focus();
+  const form = document.getElementById("exerciseEditForm");
+  const isVisible = form.classList.contains("active");
+  
+  if (isVisible) {
+    // Скрываем форму
+    form.classList.remove("active");
+    document.getElementById("exerciseNameInput").value = "";
+    document.getElementById("exerciseSetsInput").value = "";
+    document.getElementById("exerciseRepsInput").value = "";
+    document.getElementById("exerciseHasWeightInput").checked = false;
+    editingExerciseIndex = null;
+  } else {
+    // Показываем форму
+    editingExerciseIndex = null;
+    document.getElementById("exerciseNameInput").value = "";
+    document.getElementById("exerciseSetsInput").value = "";
+    document.getElementById("exerciseRepsInput").value = "";
+    document.getElementById("exerciseHasWeightInput").checked = false;
+    form.classList.add("active");
+    setTimeout(() => document.getElementById("exerciseNameInput").focus(), 100);
+  }
 };
 
 function saveExercise() {
   if (!trainingData || !trainingData.days) {
-    console.error('trainingData не загружен');
     return;
   }
   
@@ -558,6 +588,8 @@ function saveExercise() {
 
   afterDataChange();
   
+  // Скрываем и очищаем форму после сохранения
+  document.getElementById("exerciseEditForm").classList.remove("active");
   document.getElementById("exerciseNameInput").value = "";
   document.getElementById("exerciseSetsInput").value = "";
   document.getElementById("exerciseRepsInput").value = "";
@@ -594,6 +626,7 @@ document.getElementById("exerciseRepsInput").addEventListener("keypress", (e) =>
 });
 
 document.getElementById("cancelExerciseBtn").onclick = () => {
+  document.getElementById("exerciseEditForm").classList.remove("active");
   document.getElementById("exerciseNameInput").value = "";
   document.getElementById("exerciseSetsInput").value = "";
   document.getElementById("exerciseRepsInput").value = "";
