@@ -359,7 +359,16 @@ function showPage(id){
   
   todayOnly = false;
   document.querySelectorAll(".container").forEach(c=>c.style.display="none");
-  document.getElementById(id).style.display="block";
+  const targetPage = document.getElementById(id);
+  if (targetPage) targetPage.style.display="block";
+
+  // Обновляем активную кнопку в навигации
+  document.querySelectorAll("#mainNav button").forEach(btn => {
+    btn.classList.remove("active");
+    if (btn.classList.contains(`nav-${id === 'supplements' ? 'supps' : id}`)) {
+      btn.classList.add("active");
+    }
+  });
   
   if (id === "training") {
     renderDaysEditor();
@@ -521,12 +530,15 @@ function renderExerciseEditor() {
 
   day.exercises.forEach((ex, i) => {
     const li = document.createElement("li");
-    li.className = "exercise-editor-item";
+    li.className = "editable-item";
     li.innerHTML = `
-      <span style="font-weight:500; font-size:0.9em;">${ex.name} — ${ex.sets}×${ex.reps} ${ex.hasWeight ? "⚖" : ""}</span>
-      <div>
-        <button class="edit-btn" onclick="editTrainingExercise('${selectedDayId}',${i})">✏</button>
-        <button class="del-btn" onclick="deleteTrainingExercise('${selectedDayId}',${i})">🗑</button>
+      <div style="flex:1;">
+        <div style="font-weight:600;">${ex.name}</div>
+        <div style="font-size:0.8rem; opacity:0.7;">${ex.sets}×${ex.reps} ${ex.hasWeight ? "⚖" : ""}</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary" onclick="editTrainingExercise('${selectedDayId}',${i})" style="padding:4px 8px;">✏</button>
+        <button class="btn btn-danger" onclick="deleteTrainingExercise('${selectedDayId}',${i})" style="padding:4px 8px;">🗑</button>
       </div>
     `;
     ul.appendChild(li);
@@ -698,6 +710,9 @@ function renderTrainingPlan(){
   const container = document.getElementById("dynamicTrainingDays");
   container.innerHTML = "";
 
+  const currentWeekNum = document.getElementById("currentWeekNum");
+  if (currentWeekNum) currentWeekNum.textContent = week;
+
   const daysToRender = todayOnly
   ? trainingData.days.filter(d => d.id === todayDayId)
   : trainingData.days;
@@ -705,49 +720,49 @@ function renderTrainingPlan(){
 daysToRender.forEach(day => {
     const block = document.createElement("div");
     block.className = "day";
-    block.innerHTML = `<h3>${day.title}</h3>`;
+    block.innerHTML = `<h3 style="margin-bottom:16px; border-bottom:1px solid var(--border); padding-bottom:8px;">${day.title}</h3>`;
 
     day.exercises.forEach(ex=>{
       const row = document.createElement("div");
       row.className = "exercise-row";
 
-const left = `
-  <label>
-    <input type="checkbox" class="task" data-id="${ex.id}">
-    ${ex.name} — ${ex.sets}×${ex.reps}
-  </label>
-`;
+      const title = `${ex.name} — ${ex.sets}×${ex.reps}`;
+      
+      let weightHTML = '';
+      if (ex.hasWeight) {
+        weightHTML = `
+          <div class="input-group">
+            <span>кг</span>
+            <input type="number" class="weight-input" data-id="${ex.id}" step="0.5" placeholder="0">
+          </div>
+          <div style="font-size:0.75rem; color:#888; margin-top:4px; text-align:center;">
+             Пред: <span class="last-weight" data-id="${ex.id}">-</span>
+          </div>
+        `;
+      } else {
+        weightHTML = `<div></div><div></div>`;
+      }
 
-let right = ``;
-
-if (ex.hasWeight) {
-  right += `
-    <input type="number" class="weight-input" data-id="${ex.id}" step="0.5" placeholder="кг">
-    <span class="last-weight" data-id="${ex.id}"></span>
-  `;
-} else {
-  // Пустые ячейки для выравнивания (чтобы RPE был на одном месте)
-  right += `
-    <span></span>
-    <span></span>
-  `;
-}
-
-right += `
-  <select class="rpe-select" data-id="${ex.id}">
-    <option value="">RPE</option>
-    ${[...Array(10)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
-  </select>
-
-  <button class="comment-btn" data-id="${ex.id}">
-  💬<span class="comment-star">★</span>
-</button>
-`;
-
-row.innerHTML = `
-  <div class="exercise-left">${left}</div>
-  <div class="exercise-right">${right}</div>
-`;
+      row.innerHTML = `
+        <label class="exercise-header" style="cursor:pointer; display:flex; width:100%;">
+          <input type="checkbox" class="task" data-id="${ex.id}" style="width:24px; height:24px; cursor:pointer; accent-color:var(--accent); margin-right:12px; flex-shrink:0;">
+          <div class="exercise-title">${title}</div>
+        </label>
+        <div class="exercise-controls">
+          <div class="weight-col">${weightHTML}</div>
+          <div class="rpe-col">
+            <select class="rpe-select" data-id="${ex.id}">
+              <option value="">RPE</option>
+              ${[...Array(10)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
+            </select>
+          </div>
+          <div class="comment-col">
+            <button class="comment-btn" data-id="${ex.id}">
+              💬<span class="comment-star"></span>
+            </button>
+          </div>
+        </div>
+      `;
       block.appendChild(row);
     });
 
@@ -1086,6 +1101,14 @@ function showToday() {
 
   document.querySelectorAll(".container").forEach(c => c.style.display = "none");
   document.getElementById("training").style.display = "block";
+
+  // Обновляем активную кнопку в навигации
+  document.querySelectorAll("#mainNav button").forEach(btn => {
+    btn.classList.remove("active");
+    if (btn.classList.contains("nav-today")) {
+      btn.classList.add("active");
+    }
+  });
   
   renderDaysEditor();
   renderDaySelector();
@@ -1118,14 +1141,15 @@ function renderWeekStats(selectedWeek) {
   const percent = weekStats[selectedWeek - 1] || 0;
 
   summary.innerHTML = `
-    <div style="
-      background: var(--day-bg);
-      padding: 14px;
-      border-radius: 10px;
-      margin: 16px 0;
-    ">
-      <strong>Неделя ${selectedWeek}</strong><br>
-      Выполнение: <b>${percent}%</b>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">${selectedWeek}</div>
+        <div class="stat-label">Неделя</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${percent}%</div>
+        <div class="stat-label">Выполнение</div>
+      </div>
     </div>
   `;
 
@@ -1152,20 +1176,24 @@ function renderWeekDiary(selectedWeek) {
       hasData = true;
 
       exercisesHTML += `
-        <div style="background:var(--card);padding:10px;border-radius:8px;margin-top:8px;">
-          <strong>${ex.name}</strong><br>
-          ${weight ? `Вес: <b>${weight} кг</b><br>` : ""}
-          ${rpe ? `RPE: <b class="${getRPEClass(rpe)}">${rpe}</b><br>` : ""}
-          ${comment ? `💬 ${comment}` : ""}
+        <div style="background:var(--card); padding:12px; border-radius:12px; margin-top:8px; border:1px solid var(--border);">
+          <div style="font-weight:600; margin-bottom:4px;">${ex.name}</div>
+          <div style="display:flex; gap:12px; font-size:0.9rem;">
+            ${weight ? `<span>Вес: <b>${weight} кг</b></span>` : ""}
+            ${rpe ? `<span>RPE: <b class="${getRPEClass(rpe)}">${rpe}</b></span>` : ""}
+          </div>
+          ${comment ? `<div style="margin-top:4px; font-size:0.85rem; opacity:0.8;">💬 ${comment}</div>` : ""}
         </div>
       `;
     });
 
     box.innerHTML += `
-      <div style="background:var(--day-bg);padding:12px;border-radius:10px;margin-bottom:14px;">
-        <strong>${day.title}</strong>
-        ${avgRPE ? `<span class="${getRPEClass(avgRPE)}"> · ср. RPE: <b>${avgRPE}</b></span>` : ""}
-        ${hasData ? exercisesHTML : `<div style="opacity:.6;margin-top:6px;">Нет данных</div>`}
+      <div style="background:var(--day-bg); padding:16px; border-radius:16px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <strong style="font-size:1.1rem;">${day.title}</strong>
+          ${avgRPE ? `<span class="${getRPEClass(avgRPE)}" style="font-size:0.9rem;">ср. RPE: <b>${avgRPE}</b></span>` : ""}
+        </div>
+        ${hasData ? exercisesHTML : `<div style="opacity:.5; font-size:0.9rem; padding:8px;">Нет данных</div>`}
       </div>
     `;
   });
@@ -1224,27 +1252,23 @@ function resetAllStats() {
   saveToServerImmediately();
 }
 function showStatsMode(mode) {
-  const weekSelect = document.getElementById("statsWeekSelect");
-  const weekSummary = document.getElementById("weekSummary");
+  const weekStatsContainer = document.getElementById("weekStatsContainer");
   const totalStats = document.getElementById("totalStats");
 
-  document.getElementById("weekStatsBtn").style.opacity = mode === "week" ? "1" : ".5";
-  document.getElementById("totalStatsBtn").style.opacity = mode === "total" ? "1" : ".5";
-document.querySelector("#stats h3").style.display =
-  mode === "week" ? "block" : "none";
+  const weekBtn = document.getElementById("weekStatsBtn");
+  const totalBtn = document.getElementById("totalStatsBtn");
+
   if (mode === "week") {
-    weekSelect.style.display = "inline-block";
-    weekSummary.style.display = "block";
-    document.getElementById("rpeStats").style.display = "block";
+    weekStatsContainer.style.display = "block";
     totalStats.style.display = "none";
-
-    renderWeekStats(+weekSelect.value);
+    weekBtn.className = "btn btn-primary";
+    totalBtn.className = "btn btn-secondary";
+    renderWeekStats(+document.getElementById("statsWeekSelect").value);
   } else {
-    weekSelect.style.display = "none";
-    weekSummary.style.display = "none";
-    document.getElementById("rpeStats").style.display = "none";
+    weekStatsContainer.style.display = "none";
     totalStats.style.display = "block";
-
+    weekBtn.className = "btn btn-secondary";
+    totalBtn.className = "btn btn-primary";
     renderTotalStats();
   }
 }
@@ -1259,66 +1283,23 @@ function renderTotalStats() {
 
   let totalRPE = 0;
   let rpeCount = 0;
-  let rpeByWeek = [];
-
-  let totalExercises = 0;
-  let exercisesWithWeight = 0;
-  let weightProgress = [];
 
   trainingData.days.forEach(day => {
     day.exercises.forEach(ex => {
-      let weekRPE = [];
-      let hasAnyData = false;
-
       for (let w = 1; w <= 12; w++) {
         const rpe = appData.rpe[`rpe_w${w}_${ex.id}`];
-        const weight = appData.weights[`weight_w${w}_${ex.id}`];
-
         if (rpe) {
           totalRPE += Number(rpe);
           rpeCount++;
-          weekRPE.push(Number(rpe));
         }
-
-        if (weight) {
-          exercisesWithWeight++;
-          hasAnyData = true;
-          if (ex.hasWeight) {
-            const weightNum = parseFloat(weight);
-            if (!weightProgress[ex.id]) weightProgress[ex.id] = [];
-            weightProgress[ex.id].push({ week: w, weight: weightNum });
-          }
-        }
-      }
-
-      if (hasAnyData) {
-        totalExercises++;
-      }
-
-      if (weekRPE.length > 0) {
-        rpeByWeek.push(weekRPE);
       }
     });
   });
 
   const avgRPE = rpeCount ? (totalRPE / rpeCount).toFixed(1) : "—";
 
-  let progressChart = "";
-  const maxPercent = Math.max(...weekStats, 1);
-  weekStats.forEach((percent, index) => {
-    const height = maxPercent > 0 ? (percent / maxPercent * 100) : 0;
-    const color = percent >= 80 ? "#2ecc71" : percent >= 50 ? "#f1c40f" : "#e74c3c";
-    progressChart += `
-      <div class="progress-chart-bar">
-        <div style="width:30px;height:80px;background:rgba(128,128,128,0.15);border-radius:4px;position:relative;overflow:hidden;">
-          <div style="position:absolute;bottom:0;width:100%;height:${height}%;background:${color};border-radius:4px;transition:0.3s;"></div>
-        </div>
-        <span style="font-size:0.75em;font-weight:600;">${index + 1}</span>
-      </div>
-    `;
-  });
-
   let trend = "";
+  const completedWeeks = weekStats.filter(v => v > 0);
   if (completedWeeks.length >= 2) {
     const recent = weekStats.slice(-3).filter(v => v > 0);
     const earlier = weekStats.slice(-6, -3).filter(v => v > 0);
@@ -1331,44 +1312,46 @@ function renderTotalStats() {
     }
   }
 
-  box.innerHTML = `
-    <div style="
-      background: var(--day-bg);
-      padding: 16px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-    ">
-      <h3>📊 Общая статистика</h3>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:12px 0;">
-        <div>
-          <div style="font-size:0.9em;color:#888;margin-bottom:4px;">Завершённых недель</div>
-          <div style="font-size:1.5em;font-weight:bold;">${completedWeeks.length} / 12</div>
+  let progressChart = "";
+  const maxPercent = Math.max(...weekStats, 1);
+  weekStats.forEach((percent, index) => {
+    const height = maxPercent > 0 ? (percent / maxPercent * 100) : 0;
+    const color = percent >= 80 ? "var(--success)" : percent >= 50 ? "#f1c40f" : "var(--danger)";
+    progressChart += `
+      <div class="progress-chart-bar">
+        <div style="width:24px; height:80px; background:var(--day-bg); border-radius:4px; position:relative; overflow:hidden;">
+          <div style="position:absolute; bottom:0; width:100%; height:${height}%; background:${color}; transition:0.3s;"></div>
         </div>
-        <div>
-          <div style="font-size:0.9em;color:#888;margin-bottom:4px;">Среднее выполнение</div>
-          <div style="font-size:1.5em;font-weight:bold;">${avgCompletion}%</div>
-        </div>
-        <div>
-          <div style="font-size:0.9em;color:#888;margin-bottom:4px;">Средний RPE</div>
-          <div style="font-size:1.5em;font-weight:bold;">${avgRPE}</div>
-        </div>
-        <div>
-          <div style="font-size:0.9em;color:#888;margin-bottom:4px;">Выполнено упражнений</div>
-          <div style="font-size:1.5em;font-weight:bold;">${totalExercises}</div>
-        </div>
+        <span style="font-size:0.7rem; font-weight:600; margin-top:4px;">${index + 1}</span>
       </div>
-      ${trend ? `<div style="margin:12px 0;padding:8px;background:var(--card);border-radius:6px;text-align:center;"><b>${trend}</b></div>` : ""}
+    `;
+  });
+
+  box.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">${completedWeeks.length}</div>
+        <div class="stat-label">Недель</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${avgCompletion}%</div>
+        <div class="stat-label">Выполнение</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${avgRPE}</div>
+        <div class="stat-label">Средний RPE</div>
+      </div>
+      ${trend ? `
+      <div class="stat-card" style="grid-column: span 3;">
+        <div class="stat-value" style="font-size:1.1rem;">${trend}</div>
+        <div class="stat-label">Динамика</div>
+      </div>` : ""}
     </div>
 
-    <div style="
-      background: var(--day-bg);
-      padding: 16px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-    ">
-      <h3>📈 Прогресс по неделям</h3>
-      <div class="progress-chart-container">
-        ${progressChart || "<div style='opacity:0.6;'>Нет данных</div>"}
+    <div style="background:var(--day-bg); padding:20px; border-radius:20px; margin-top:20px;">
+      <h3 style="font-size:1rem; margin-bottom:16px;">Прогресс по неделям</h3>
+      <div class="progress-chart-container" style="display:flex; justify-content:space-between; align-items:flex-end; height:100px;">
+        ${progressChart}
       </div>
     </div>
   `;
@@ -1382,9 +1365,10 @@ function renderDaySelector() {
 
   trainingData.days.forEach(day => {
     const btn = document.createElement("button");
-    btn.className = "day-btn";
+    btn.className = day.id === selectedDayId ? "btn btn-primary" : "btn btn-secondary";
     btn.textContent = day.title;
-    btn.classList.toggle("active", day.id === selectedDayId);
+    btn.style.padding = "8px 12px";
+    btn.style.fontSize = "0.85rem";
 
     btn.addEventListener('click', () => {
       syncDOMToTrainingData();
@@ -1409,12 +1393,12 @@ function renderDaysEditor() {
     const li = document.createElement("li");
     li.className = "editable-item";
     li.innerHTML = `
-      <span style="font-weight:500; font-size:0.95em;">${day.title}</span>
-      <div>
-        <button onclick="moveDay(${i}, -1)" title="Вверх">↑</button>
-        <button onclick="moveDay(${i}, 1)" title="Вниз">↓</button>
-        <button class="edit-btn" onclick="editDay(${i})" title="Редактировать">✏</button>
-        <button class="del-btn" onclick="deleteDay(${i})" title="Удалить">🗑</button>
+      <span style="font-weight:600;">${day.title}</span>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary" onclick="moveDay(${i}, -1)" style="padding:4px 8px;">↑</button>
+        <button class="btn btn-secondary" onclick="moveDay(${i}, 1)" style="padding:4px 8px;">↓</button>
+        <button class="btn btn-secondary" onclick="editDay(${i})" style="padding:4px 8px;">✏</button>
+        <button class="btn btn-danger" onclick="deleteDay(${i})" style="padding:4px 8px;">🗑</button>
       </div>
     `;
 

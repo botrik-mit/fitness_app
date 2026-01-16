@@ -17,267 +17,385 @@
 
 <style>
   :root {
-    --bg: #f5f5f5;
-    --fg: #222;
+    --bg: #f8f9fa;
+    --fg: #1a1a1a;
     --card: #ffffff;
-    --day-bg: #eef4ff;
-    --accent: #4a7dff;
+    --day-bg: #f1f3f5;
+    --accent: #007aff;
+    --accent-hover: #0056b3;
+    --danger: #ff3b30;
+    --success: #34c759;
+    --border: rgba(0, 0, 0, 0.1);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --radius: 12px;
   }
+
   body.dark {
-    --bg: #0e0e0e;
-    --fg: #e0e0e0;
-    --card: #1a1a1a;
-    --day-bg: #232323;
-    --accent: #729dff;
+    --bg: #121212;
+    --fg: #f5f5f7;
+    --card: #1c1c1e;
+    --day-bg: #2c2c2e;
+    --accent: #0a84ff;
+    --accent-hover: #409cff;
+    --danger: #ff453a;
+    --success: #32d74b;
+    --border: rgba(255, 255, 255, 0.1);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
-  
-  body.dark .edit-btn {
-    background: rgba(114, 157, 255, 0.15);
-    color: var(--accent);
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
   }
-  
-  body.dark .del-btn {
-    background: rgba(255, 77, 79, 0.15);
-    color: #ff6b6b;
-  }
-  
+
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
     padding: 20px;
     background: var(--bg);
     color: var(--fg);
-    transition: 0.3s;
+    transition: background-color 0.3s, color 0.3s;
     font-size: 16px;
-    line-height: 1.5;
+    line-height: 1.4;
+    padding-bottom: 100px; /* Space for bottom nav */
   }
-  
+
+  /* Typography */
+  h1, h2, h3 {
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 16px;
+  }
+
   /* AUTH SCREEN */
   #authScreen {
     max-width: 400px;
-    margin: 100px auto;
+    margin: 80px auto;
     text-align: center;
     background: var(--card);
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 40px 24px;
+    border-radius: 24px;
+    box-shadow: var(--shadow);
   }
-  
-  #authScreen h1 {
-    margin-bottom: 30px;
-    color: var(--accent);
-  }
-  
+
   #loginBtn {
     background: var(--accent);
     color: white;
     border: none;
-    padding: 15px 30px;
-    border-radius: 10px;
-    font-size: 1em;
+    padding: 16px 32px;
+    border-radius: var(--radius);
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(74, 125, 255, 0.3);
+    width: 100%;
     transition: 0.2s;
   }
-  
-  #loginBtn:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
+
+  #loginBtn:active {
+    transform: scale(0.98);
   }
-  
-  #appContainer {
+
+  /* NAVIGATION */
+  nav {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 500px;
+    background: var(--card);
+    padding: 8px;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    border: 1px solid var(--border);
+  }
+
+  nav button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--fg);
+    padding: 10px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: 0.2s;
+    opacity: 0.6;
+    border-radius: 16px;
+  }
+
+  nav button:active, nav button.active {
+    opacity: 1;
+    background: var(--day-bg);
+  }
+
+  nav button::before {
+    font-size: 20px;
+    margin-bottom: 2px;
+  }
+
+  /* Icons for buttons */
+  .nav-today::before { content: "📅"; }
+  .nav-training::before { content: "🏋️"; }
+  .nav-nutrition::before { content: "🍎"; }
+  .nav-supps::before { content: "💊"; }
+  .nav-stats::before { content: "📊"; }
+  .nav-theme::before { content: "🌗"; }
+  .nav-logout::before { content: "🚪"; }
+
+  /* CONTAINER */
+  .container {
+    max-width: 800px;
+    margin: 0 auto 40px;
+    background: var(--card);
+    padding: 24px;
+    border-radius: 24px;
+    box-shadow: var(--shadow);
     display: none;
   }
-  
-  nav { margin:20px auto; max-width:900px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
-    background:var(--card); padding:10px; border-radius:12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-  nav button { padding:8px 12px; border-radius:10px; border:1px solid rgba(128,128,128,0.2); background:var(--card);
-    color:var(--fg); cursor:pointer; font-size: 0.9em; transition: 0.2s; font-weight: 500; }
-  nav button:active { background: var(--accent); color: white; border-color: var(--accent); }
-  
-  .container { max-width: 900px; margin: auto; background: var(--card); padding: 25px;
-    border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display:none; }
-  #training { display:block; }
-  
-  .next-week-btn {
-    padding: 10px 20px; margin-bottom: 20px; border-radius: 10px; border: none;
-    background: var(--accent); color: white; cursor: pointer; font-size: 0.95em; font-weight: 600;
-    box-shadow: 0 4px 12px rgba(74, 125, 255, 0.3); transition: 0.2s;
-  }
-  .next-week-btn:disabled {
-    opacity: 0.5; cursor: not-allowed; box-shadow: none;
-  }
-  
-  .day { background: var(--day-bg); padding:15px; margin-bottom:15px; border-radius:12px; border: 1px solid rgba(128,128,128,0.05); }
-  input[type="checkbox"] { width: 20px; height: 20px; margin-right:12px; cursor: pointer; accent-color: var(--accent); }
-  
-  .progress-container { width:100%; background:rgba(128,128,128,0.2); border-radius:10px; margin:15px 0; height: 10px; overflow: hidden; }
-  .progress-bar { height:100%; background:var(--accent); width:0%; transition:0.4s; }
-  
-  .exercise-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; gap: 10px; }
-  .exercise-left { flex: 1; display: flex; align-items: center; font-weight: 500; }
-  .exercise-right { display: flex; align-items: center; gap: 8px; }
-  
-  .weight-input { width: 65px; padding: 6px 8px; border: 1px solid rgba(128,128,128,0.3); border-radius: 8px;
-    font-size: 0.9em; background: var(--bg); color: var(--fg); text-align: center; }
-  .last-weight { font-size: 0.8em; color: #888; min-width: 50px; }
-  
-  .rpe-select { padding: 5px; border-radius: 8px; font-size: 0.85em; border: 1px solid rgba(128,128,128,0.3); background: var(--bg); color: var(--fg); }
-  .comment-btn { border: none; background: rgba(128,128,128,0.1); cursor: pointer; font-size: 1em; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; }
-  .comment-star { position: absolute; top: -2px; right: -2px; font-size: 0.7em; color: var(--accent); visibility: hidden; }
-  
-  .editable-list { list-style: none; padding: 0; margin: 10px 0; width: 100%; }
-  .editable-item, .exercise-editor-item {
-    display: flex; justify-content: space-between; align-items: center;
-    background: var(--bg); padding: 12px 15px; margin-bottom: 10px; border-radius: 12px; 
-    border: 1px solid rgba(128,128,128,0.1); width: 100%; box-sizing: border-box;
-  }
-  .editable-item span, .exercise-editor-item span { flex: 1; padding-right: 10px; }
-  .editable-item div, .exercise-editor-item div { display: flex; gap: 6px; flex-shrink: 0; }
-  .editable-item button, .exercise-editor-item button { 
-    cursor: pointer; width: 32px; height: 32px; border-radius: 8px; border: none; 
-    display: flex; align-items: center; justify-content: center; font-size: 0.9em; transition: 0.2s;
-  }
-  .edit-btn { background: #eef4ff; color: #4a7dff; }
-  .del-btn { background: #fff1f0; color: #ff4d4f; }
-  
-  .edit-section-btn {
-    padding: 10px 20px; margin-bottom: 20px; border-radius: 10px;
-    border: 1px solid var(--accent); background: var(--card); color: var(--accent);
-    cursor: pointer; font-size: 0.9em; font-weight: 600; transition: 0.2s;
-  }
-  .edit-section-btn:hover {
-    background: var(--accent); color: white;
-  }
-  
-  #addDayBtn, #addExerciseBtn {
-    padding: 10px 20px; margin: 15px 0; border-radius: 10px;
-    border: 1px dashed var(--accent); background: var(--card); color: var(--accent);
-    cursor: pointer; font-size: 0.9em; font-weight: 600; transition: 0.2s;
-    width: 100%;
-  }
-  #addDayBtn:hover, #addExerciseBtn:hover {
-    background: rgba(74, 125, 255, 0.05); border-style: solid;
-  }
-  
-  .edit-form { background: var(--card); padding: 20px; border-radius: 16px; margin: 20px 0; border: 1px solid var(--accent); box-shadow: 0 8px 25px rgba(0,0,0,0.1); display: none; transition: 0.3s; }
-  .edit-form.active { display: block; animation: slideIn 0.3s ease; }
-  
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  .edit-form label { display: block; margin-top: 12px; font-weight: 600; font-size: 0.9em; opacity: 0.8; }
-  .edit-form input, .edit-form select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid rgba(128,128,128,0.2);
-    border-radius: 10px; font-size: 1em; background: var(--bg); color: var(--fg); box-sizing: border-box; }
-  
-  .edit-form .checkbox-wrapper { 
-    display: flex; 
-    align-items: center; 
-    gap: 10px; 
-    margin: 15px 0; 
-    padding: 10px 0;
-  }
-  .edit-form .checkbox-wrapper input[type="checkbox"] { 
-    width: 20px; 
-    height: 20px; 
-    margin: 0; 
-    cursor: pointer; 
-    accent-color: var(--accent);
-    flex-shrink: 0;
-  }
-  .edit-form .checkbox-wrapper label { 
-    margin: 0; 
-    font-weight: normal; 
-    opacity: 1; 
-    cursor: pointer;
-    flex: 1;
-  }
-  
-  .edit-form .form-buttons { display: flex; gap: 10px; margin-top: 20px; }
-  .edit-form .save-btn, .edit-form .cancel-btn { 
-    flex: 1; padding: 12px; border-radius: 10px; border: none; 
-    font-size: 1em; font-weight: 600; cursor: pointer; transition: 0.2s;
-  }
-  .edit-form .save-btn { background: var(--accent); color: white; }
-  .edit-form .save-btn:hover { opacity: 0.9; }
-  .edit-form .cancel-btn { background: rgba(128,128,128,0.15); color: var(--fg); }
-  .edit-form .cancel-btn:hover { background: rgba(128,128,128,0.25); }
-  
-  .day-btn { padding: 8px 15px; border-radius: 10px; border: 1px solid rgba(128,128,128,0.2); background: var(--card); 
-    color: var(--fg); cursor: pointer; font-size: 0.85em; transition: 0.2s; font-weight: 500; }
-  .day-btn.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(74, 125, 255, 0.2); }
-  
-  #daySelector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
-  
-  hr { border: 0; border-top: 1px solid rgba(128,128,128,0.1); margin: 30px 0; }
-  
-  .supplement-section { margin-bottom: 25px; }
-  .supplement-textarea { width: 100%; min-height: 100px; padding: 12px; border-radius: 8px; border: 1px solid #aaa;
-    font-size: 1em; resize: vertical; display: none; background: var(--bg); color: var(--fg); box-sizing: border-box; }
-  .supplement-view { white-space: pre-wrap; background: var(--day-bg); padding: 14px; border-radius: 8px; min-height: 50px; }
-  
-  /* График прогресса по неделям */
-  .progress-chart-container {
-    display: flex; gap: 8px; justify-content: center; align-items: flex-end;
-    margin: 16px 0; min-height: 120px; overflow-x: auto; padding: 5px;
-  }
-  .progress-chart-bar {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    min-width: 30px; flex-shrink: 0;
-  }
-  
-  /* RPE цветовая индикация */
-  .rpe-low { color: #2ecc71; font-weight: 600; }
-  .rpe-mid { color: #f1c40f; font-weight: 600; }
-  .rpe-high { color: #e74c3c; font-weight: 600; }
 
-  /* МОБИЛЬНАЯ АДАПТАЦИЯ */
-  @media (max-width: 768px) {
-    body { padding: 10px; font-size: 15px; padding-bottom: 140px; }
-    h1 { font-size: 1.5em !important; margin: 15px 0 !important; }
-    h2 { font-size: 1.3em !important; margin: 12px 0 !important; }
-    
-    nav { position: fixed; bottom: 0; left: 0; right: 0; margin: 0; padding: 12px 10px 25px; gap: 8px; border-radius: 24px 24px 0 0;
-      box-shadow: 0 -5px 20px rgba(0,0,0,0.15); background: var(--card); z-index: 999; display: grid; grid-template-columns: repeat(3, 1fr); }
-    nav button { padding: 10px 5px; font-size: 0.75em; min-height: 44px; border-radius: 12px; }
-    
-    .container { padding: 15px; margin: 5px auto 140px; border-radius: 24px; }
-    .next-week-btn { padding: 14px; font-size: 0.95em; width: 100%; border-radius: 14px; }
-    
-    .day { padding: 15px; margin-bottom: 12px; }
-    input[type="checkbox"] { width: 22px; height: 22px; margin-right: 10px; }
-    
-    .exercise-row { flex-direction: column; align-items: flex-start; gap: 10px; padding: 5px 0; border-bottom: 1px solid rgba(128,128,128,0.1); }
-    .exercise-right { 
-      width: 100%; 
-      display: grid;
-      grid-template-columns: 70px 55px 90px 38px;
-      gap: 8px;
-      align-items: center;
+  #training { display: block; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-secondary { background: var(--day-bg); color: var(--fg); border: 1px solid var(--border); }
+  .btn-danger { background: rgba(255, 59, 48, 0.1); color: var(--danger); }
+  .btn-success { background: rgba(52, 199, 89, 0.1); color: var(--success); }
+
+  body.dark .btn-secondary { background: #2c2c2e; border-color: rgba(255,255,255,0.1); }
+  body.dark .btn-danger { background: rgba(255, 69, 58, 0.2); }
+
+  .btn:active { transform: scale(0.97); }
+
+  /* SUPPLEMENT CARDS */
+  .supplement-card {
+    background: var(--card);
+    padding: 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  /* TRAINING ELEMENTS */
+  .next-week-btn { width: 100%; margin-bottom: 24px; padding: 16px; }
+
+  .day {
+    background: var(--day-bg);
+    padding: 20px;
+    margin-bottom: 16px;
+    border-radius: 20px;
+  }
+
+  .exercise-row {
+    background: var(--card);
+    padding: 16px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  }
+
+  .exercise-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .exercise-title {
+    flex: 1;
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+
+  .exercise-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .input-group {
+    display: flex;
+    align-items: center;
+    background: var(--day-bg);
+    border-radius: 10px;
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+  }
+
+  .input-group span {
+    font-size: 0.8rem;
+    color: #888;
+    margin-right: 8px;
+  }
+
+  .weight-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--fg);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 8px 0;
+    outline: none;
+  }
+
+  .rpe-select {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--day-bg);
+    color: var(--fg);
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    appearance: none;
+    text-align: center;
+  }
+
+  .comment-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--day-bg);
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .comment-star {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--accent);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--card);
+    visibility: hidden;
+  }
+
+  /* FORMS & EDITORS */
+  .edit-form {
+    background: var(--card);
+    padding: 24px;
+    border-radius: 20px;
+    border: 1px solid var(--accent);
+    margin-bottom: 24px;
+    display: none;
+  }
+
+  .edit-form.active { display: block; }
+
+  .edit-form label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    opacity: 0.7;
+  }
+
+  .edit-form input, .edit-form select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--day-bg);
+    color: var(--fg);
+    margin-bottom: 16px;
+    font-size: 1rem;
+  }
+
+  .editable-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--day-bg);
+    padding: 12px 16px;
+    border-radius: 16px;
+    margin-bottom: 8px;
+  }
+
+  /* PROGRESS BAR */
+  .progress-container {
+    height: 12px;
+    background: var(--day-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--day-bg);
+    padding: 16px;
+    border-radius: 16px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+
+  /* MOBILE ADAPTATION */
+  @media (max-width: 600px) {
+    body { padding: 16px; padding-bottom: 120px; }
+    .container { padding: 20px; border-radius: 28px; }
+    .exercise-controls {
+      grid-template-columns: 1fr 1fr;
     }
-    
-    .weight-input { width: 100% !important; min-height: 38px; font-size: 1em !important; }
-    .last-weight { min-width: auto; font-size: 0.75em; }
-    .rpe-select { width: 100%; min-height: 38px; font-size: 0.9em; }
-    .comment-btn { width: 38px; height: 38px; font-size: 1.2em; }
-    
-    .editable-item, .exercise-editor-item { padding: 10px !important; }
-    .editable-item button, .exercise-editor-item button { width: 36px; height: 36px; font-size: 1em; }
-    
-    .edit-form { padding: 15px; }
-    .edit-form input, .edit-form select { min-height: 44px; font-size: 16px; }
-    .edit-form .checkbox-wrapper { margin: 12px 0; gap: 12px; }
-    .edit-form .checkbox-wrapper input[type="checkbox"] { width: 24px; height: 24px; min-width: 24px; }
-    .edit-form .checkbox-wrapper label { font-size: 16px; }
-    
-    .progress-chart-container { justify-content: flex-start; }
-    .progress-chart-bar { min-width: 28px; }
-    
-    #addDayBtn, #addExerciseBtn { font-size: 1em; }
-    .edit-section-btn { width: 100%; }
+    .comment-btn {
+      grid-column: span 2;
+      width: 100%;
+    }
+    nav {
+      bottom: 16px;
+    }
   }
 </style>
 </head>
@@ -299,25 +417,25 @@
 <!-- APP CONTAINER -->
 <div id="appContainer">
 
-<nav>
-  <button onclick="showToday()">Сегодня</button>
-  <button onclick="showPage('training')">Тренировки</button>
-  <button onclick="showPage('nutrition')">Питание</button>
-  <button onclick="showPage('supplements')">Добавки</button>
-  <button onclick="showPage('stats')">Статистика</button>
-  <button class="toggle-theme" onclick="toggleTheme()">Тема</button>
-  <button onclick="logout()" style="color: #ff4d4f;">Выход</button>
+<nav id="mainNav">
+  <button onclick="showToday()" class="nav-today">Сегодня</button>
+  <button onclick="showPage('training')" class="nav-training active">План</button>
+  <button onclick="showPage('nutrition')" class="nav-nutrition">Питание</button>
+  <button onclick="showPage('supplements')" class="nav-supps">Добавки</button>
+  <button onclick="showPage('stats')" class="nav-stats">Статы</button>
+  <button onclick="toggleTheme()" class="nav-theme">Тема</button>
+  <button onclick="logout()" class="nav-logout" style="color: var(--danger);">Выход</button>
 </nav>
 
 <!-- TRAINING -->
 <div id="training" class="container">
 
-  <button onclick="nextWeek()" class="next-week-btn">Следующая неделя</button>
+  <button onclick="nextWeek()" class="btn btn-primary next-week-btn">Следующая неделя</button>
 <div id="trainingEditor">
 
   <h2>Дни тренировок</h2>
-  <ul id="daysEditor" class="editable-list"></ul>
-  <button id="addDayBtn">+ Добавить день</button>
+  <ul id="daysEditor" class="editable-list" style="padding:0; list-style:none;"></ul>
+  <button id="addDayBtn" class="btn btn-secondary" style="width:100%; margin-top:8px;">+ Добавить день</button>
   
   <div id="dayEditForm" class="edit-form">
     <label>Название дня:</label>
@@ -332,17 +450,17 @@
       <option value="6">Суббота</option>
       <option value="0">Воскресенье</option>
     </select>
-    <div class="form-buttons">
-      <button class="save-btn" id="saveDayBtn">💾 Сохранить</button>
-      <button class="cancel-btn" id="cancelDayBtn">❌ Отмена</button>
+    <div style="display:flex; gap:12px;">
+      <button class="btn btn-primary" id="saveDayBtn" style="flex:1;">💾 Сохранить</button>
+      <button class="btn btn-secondary" id="cancelDayBtn" style="flex:1;">❌ Отмена</button>
     </div>
   </div>
   
-  <hr>
+  <hr style="margin:24px 0; border:0; border-top:1px solid var(--border);">
 
   <h2>Редактор упражнений</h2>
-  <div id="daySelector"></div>
-  <button id="addExerciseBtn">+ Добавить упражнение</button>
+  <div id="daySelector" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"></div>
+  <button id="addExerciseBtn" class="btn btn-secondary" style="width:100%;">+ Добавить упражнение</button>
   
   <div id="exerciseEditForm" class="edit-form">
     <label>Название упражнения:</label>
@@ -351,24 +469,24 @@
     <input type="number" id="exerciseSetsInput" placeholder="Например: 4" min="1">
     <label>Повторения:</label>
     <input type="text" id="exerciseRepsInput" placeholder="Например: 8-10">
-    <div class="checkbox-wrapper">
-      <input type="checkbox" id="exerciseHasWeightInput">
-      <label for="exerciseHasWeightInput">Есть вес</label>
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <input type="checkbox" id="exerciseHasWeightInput" style="width:20px; height:20px; margin:0;">
+      <label for="exerciseHasWeightInput" style="margin:0;">Есть вес</label>
     </div>
-    <div class="form-buttons">
-      <button class="save-btn" id="saveExerciseBtn">💾 Сохранить</button>
-      <button class="cancel-btn" id="cancelExerciseBtn">❌ Отмена</button>
+    <div style="display:flex; gap:12px;">
+      <button class="btn btn-primary" id="saveExerciseBtn" style="flex:1;">💾 Сохранить</button>
+      <button class="btn btn-secondary" id="cancelExerciseBtn" style="flex:1;">❌ Отмена</button>
     </div>
   </div>
   
-  <ul id="exerciseEditorList" class="editable-list"></ul>
-  <hr>
+  <ul id="exerciseEditorList" class="editable-list" style="padding:0; list-style:none;"></ul>
+  <hr style="margin:24px 0; border:0; border-top:1px solid var(--border);">
 
 </div>
 
-  <h1>План Роста (12 недель)</h1>
+  <h1>План Роста (Неделя <span id="currentWeekNum">1</span>)</h1>
 
-  <h2>Прогресс за неделю</h2>
+  <h2 style="font-size:1.1rem; opacity:0.8;">Прогресс недели</h2>
   <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
 
   <div id="dynamicTrainingDays"></div>
@@ -379,71 +497,75 @@
 <div id="nutrition" class="container">
   <h1>Питание</h1>
 
-  <button id="editNutritionBtn" class="edit-section-btn">✏ Редактировать</button>
+  <button id="editNutritionBtn" class="btn btn-secondary" style="width:100%; margin-bottom:20px;">✏ Редактировать</button>
 
-  <textarea id="nutritionText" style="width:100%; min-height:180px; padding:12px; border-radius:8px; border:1px solid #aaa; font-size:1em; resize:vertical; display:none; background: var(--bg); color: var(--fg);"></textarea>
+  <textarea id="nutritionText" style="width:100%; min-height:180px; padding:12px; border-radius:12px; border:1px solid var(--border); font-size:1rem; resize:vertical; display:none; background: var(--day-bg); color: var(--fg);"></textarea>
 
-  <div id="nutritionView" style="white-space:pre-wrap; background: var(--day-bg); padding:14px; border-radius:8px;"></div>
+  <div id="nutritionView" style="white-space:pre-wrap; background: var(--day-bg); padding:20px; border-radius:12px; font-size:1.05rem;"></div>
 </div>
 
 <!-- SUPPLEMENTS -->
 <div id="supplements" class="container">
   <h1>Добавки</h1>
 
-  <button id="editSupplementsBtn" class="edit-section-btn">✏ Редактировать</button>
+  <button id="editSupplementsBtn" class="btn btn-secondary" style="width:100%; margin-bottom:20px;">✏ Редактировать</button>
 
-  <div class="supplement-section">
-    <h3>🌅 Завтрак</h3>
-    <textarea id="supplementBreakfastText" class="supplement-textarea"></textarea>
-    <div id="supplementBreakfastView" class="supplement-view"></div>
+  <div style="display:grid; gap:20px;">
+    <div class="supplement-card">
+      <h3 style="margin-bottom:8px;">🌅 Завтрак</h3>
+      <textarea id="supplementBreakfastText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
+      <div id="supplementBreakfastView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
+    </div>
+
+    <div class="supplement-card">
+      <h3 style="margin-bottom:8px;">🍽 Обед</h3>
+      <textarea id="supplementLunchText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
+      <div id="supplementLunchView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
+    </div>
+
+    <div class="supplement-card">
+      <h3 style="margin-bottom:8px;">🍴 Ужин</h3>
+      <textarea id="supplementDinnerText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
+      <div id="supplementDinnerView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
+    </div>
+
+    <div class="supplement-card">
+      <h3 style="margin-bottom:8px;">💪 Перед тренировкой</h3>
+      <textarea id="supplementPreWorkoutText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
+      <div id="supplementPreWorkoutView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
+    </div>
+
+    <div class="supplement-card">
+      <h3 style="margin-bottom:8px;">🏋️ После тренировки</h3>
+      <textarea id="supplementPostWorkoutText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
+      <div id="supplementPostWorkoutView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
+    </div>
   </div>
-
-  <div class="supplement-section">
-    <h3>🍽 Обед</h3>
-    <textarea id="supplementLunchText" class="supplement-textarea"></textarea>
-    <div id="supplementLunchView" class="supplement-view"></div>
-  </div>
-
-  <div class="supplement-section">
-    <h3>🍴 Ужин</h3>
-    <textarea id="supplementDinnerText" class="supplement-textarea"></textarea>
-    <div id="supplementDinnerView" class="supplement-view"></div>
-  </div>
-
-  <div class="supplement-section">
-    <h3>💪 Перед тренировкой</h3>
-    <textarea id="supplementPreWorkoutText" class="supplement-textarea"></textarea>
-    <div id="supplementPreWorkoutView" class="supplement-view"></div>
-  </div>
-
-  <div class="supplement-section">
-    <h3>🏋️ После тренировки</h3>
-    <textarea id="supplementPostWorkoutText" class="supplement-textarea"></textarea>
-    <div id="supplementPostWorkoutView" class="supplement-view"></div>
-  </div>
-
 </div>
 
 <!-- STATS -->
 <div id="stats" class="container">
   <h1>Статистика</h1>
-<div style="margin:10px 0; display:flex; gap:10px; flex-wrap:wrap;">
-  <button onclick="resetAllStats()" class="del-btn">Сбросить всю статистику</button>
-</div>
-<div style="margin:15px 0;">
-  <button onclick="showStatsMode('week')" class="edit-btn" id="weekStatsBtn">📅 По неделям</button>
-  <button onclick="showStatsMode('total')" class="edit-btn" id="totalStatsBtn">📊 Общая</button>
-</div>
-  <label>
-    Неделя:
-    <select id="statsWeekSelect"></select>
-  </label>
 
-  <div id="weekSummary"></div>
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:20px;">
+  <button onclick="showStatsMode('week')" class="btn btn-primary" id="weekStatsBtn">📅 По неделям</button>
+  <button onclick="showStatsMode('total')" class="btn btn-secondary" id="totalStatsBtn">📊 Общая</button>
+</div>
+
+  <div id="weekStatsContainer">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+      <span style="font-weight:600;">Неделя:</span>
+      <select id="statsWeekSelect" style="flex:1; padding:10px; border-radius:12px; border:1px solid var(--border); background:var(--day-bg); color:var(--fg);"></select>
+    </div>
+    <div id="weekSummary"></div>
+    <h3>Упражнения</h3>
+    <div id="rpeStats"></div>
+  </div>
+
   <div id="totalStats" style="display:none;"></div>
 
-  <h3>Упражнения за неделю</h3>
-  <div id="rpeStats"></div>
+  <hr style="margin:32px 0; border:0; border-top:1px solid var(--border);">
+  <button onclick="resetAllStats()" class="btn btn-danger" style="width:100%;">🚮 Сбросить всю статистику</button>
 </div>
 
 </div>
