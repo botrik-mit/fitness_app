@@ -71,10 +71,11 @@
 
   body.dark .auth-card { box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid var(--border); }
 
-  .auth-card h1 { font-size: 1.8rem; margin: 0 0 12px; font-weight: 800; }
-  .auth-card p { color: var(--secondary); margin-bottom: 32px; font-size: 1rem; }
+  h1 { font-size: 1.8rem; margin-bottom: 24px; }
+  h2 { font-size: 1.4rem; margin-top: 48px; margin-bottom: 20px; }
+  h3 { font-size: 1.2rem; margin-bottom: 16px; }
 
-  #loginBtn {
+  /* NAVIGATION */
     background: var(--accent);
     color: white;
     border: none;
@@ -195,61 +196,117 @@
   }
   .exercise-title { font-weight: 700; font-size: 1.05rem; }
 
+  /* EXERCISE ROW POLISH */
+  .exercise-row {
+    background: var(--card);
+    padding: 16px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+
+  .exercise-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+
+  .exercise-header input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    margin: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .exercise-title {
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
   .exercise-controls {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
   }
 
   .input-group {
-    background: var(--card);
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 8px 12px;
+    border-radius: 10px;
+    padding: 6px 12px;
     display: flex;
     align-items: center;
     flex: 1;
-    max-width: 110px;
+    max-width: 100px;
   }
+
   .input-group input {
     border: none;
     background: none;
     color: var(--fg);
     width: 100%;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.95rem;
     text-align: center;
     outline: none;
+    padding: 0;
   }
-  .input-group span { font-size: 0.75rem; color: var(--secondary); font-weight: 700; }
+
+  .input-group span {
+    font-size: 0.75rem;
+    color: var(--secondary);
+    font-weight: 700;
+    margin-left: 4px;
+  }
 
   .rpe-select {
-    height: 42px;
-    border-radius: 12px;
+    height: 38px;
+    border-radius: 10px;
     border: 1px solid var(--border);
-    background: var(--card);
+    background: var(--bg);
     color: var(--fg);
     font-weight: 700;
-    padding: 0 10px;
-    width: 80px;
+    font-size: 0.9rem;
+    padding: 0 8px;
     outline: none;
+    cursor: pointer;
   }
 
   .comment-btn {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     border: 1px solid var(--border);
-    background: var(--card);
+    background: var(--bg);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
+    padding: 0;
+    transition: 0.2s;
   }
+
+  .comment-btn:active { transform: scale(0.9); }
+
   .comment-star {
-    position: absolute; top: -2px; right: -2px; width: 10px; height: 10px;
-    background: var(--accent); border-radius: 50%; border: 2px solid var(--card); visibility: hidden;
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 2px solid var(--card);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
 
   /* FORMS */
@@ -257,10 +314,10 @@
     background: var(--card);
     padding: 24px;
     border-radius: 24px;
-    margin: 20px 0;
+    margin: 48px 0;
     border: 2px solid var(--accent);
     display: none;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
   }
   .edit-form.active { display: block; animation: slideUp 0.3s ease; }
   @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -344,8 +401,8 @@
       <hr style="margin:32px 0; border:0; border-top:1px solid var(--border);">
 
       <h2>Редактор упражнений</h2>
-      <div id="daySelector" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"></div>
-      <button id="addExerciseBtn" class="btn btn-secondary" style="width:100%;">+ Добавить упражнение</button>
+      <div id="daySelector" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px;"></div>
+      <button id="addExerciseBtn" class="btn btn-secondary" style="width:100%; margin-bottom:16px;">+ Добавить упражнение</button>
       
       <div id="exerciseEditForm" class="edit-form">
         <label>НАЗВАНИЕ УПРАЖНЕНИЯ</label>

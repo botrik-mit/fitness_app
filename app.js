@@ -139,30 +139,32 @@ function renderTrainingPlan() {
       
       const isDone = appData.tasks[`task_${ex.id}`];
       const weight = appData.weights[`weight_w${week}_${ex.id}`] || "";
-      const lastWeight = appData.weights[`weight_w${week-1}_${ex.id}`] || "";
       const currentRpe = appData.rpe[`rpe_w${week}_${ex.id}`] || "";
 
       row.innerHTML = `
-        <label class="exercise-header">
-          <input type="checkbox" class="task" data-id="${ex.id}" ${isDone ? 'checked' : ''} onchange="toggleTask('${ex.id}', this.checked)">
-          <div class="exercise-title">${ex.name} — ${ex.sets}×${ex.reps}</div>
-        </label>
-        <div class="exercise-controls">
-          ${ex.hasWeight ? `
-            <div class="input-group">
-              <input type="number" step="0.5" placeholder="0" value="${weight}" oninput="updateWeight('${ex.id}', this.value)">
-              <span>КГ</span>
-            </div>
-          ` : ''}
-          <select class="rpe-select" onchange="updateRpe('${ex.id}', this.value)">
-            <option value="">RPE</option>
-            ${[6,7,8,9,10].map(v => `<option value="${v}" ${currentRpe == v ? 'selected' : ''}>${v}</option>`).join("")}
-          </select>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <label class="exercise-header" style="margin-bottom: 0; flex: 1;">
+            <input type="checkbox" class="task" data-id="${ex.id}" ${isDone ? 'checked' : ''} onchange="toggleTask('${ex.id}', this.checked)">
+            <div class="exercise-title">${ex.name} — ${ex.sets}×${ex.reps}</div>
+          </label>
           <button class="comment-btn" onclick="openComment('${ex.id}')">
             <span>💬</span>
             <span class="comment-star" id="star_${ex.id}" style="visibility: ${appData.comments[`comment_w${week}_${ex.id}`] ? 'visible' : 'hidden'}"></span>
           </button>
-          ${ex.hasWeight && lastWeight ? `<div style="font-size:0.7rem; color:var(--secondary); font-weight:700;">Был: ${lastWeight}</div>` : ''}
+        </div>
+        <div class="exercise-controls">
+          ${ex.hasWeight ? `
+            <div class="input-group">
+              <input type="number" step="0.5" placeholder="0" value="${weight}" oninput="updateWeight('${ex.id}', this.value)">
+              <span>кг</span>
+            </div>
+          ` : ''}
+          <div style="flex: 1; max-width: 100px;">
+            <select class="rpe-select" onchange="updateRpe('${ex.id}', this.value)" style="width: 100%;">
+              <option value="">RPE</option>
+              ${[6,7,8,9,10].map(v => `<option value="${v}" ${currentRpe == v ? 'selected' : ''}>${v}</option>`).join("")}
+            </select>
+          </div>
         </div>
       `;
       block.appendChild(row);
