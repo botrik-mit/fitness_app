@@ -716,6 +716,12 @@ if (ex.hasWeight) {
     <input type="number" class="weight-input" data-id="${ex.id}" step="0.5" placeholder="кг">
     <span class="last-weight" data-id="${ex.id}"></span>
   `;
+} else {
+  // Пустые ячейки для выравнивания (чтобы RPE был на одном месте)
+  right += `
+    <span></span>
+    <span></span>
+  `;
 }
 
 right += `
