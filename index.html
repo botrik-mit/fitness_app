@@ -2,49 +2,43 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
 <meta name="description" content="План тренировок и питания на 12 недель" />
-<meta name="theme-color" content="#4a7dff" />
+<meta name="theme-color" content="#007aff" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="План Тренировок" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="apple-touch-icon" href="icon/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <title>План Роста и Тренировок</title>
 
-<!-- Supabase JS -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
   :root {
     --bg: #f2f2f7;
-    --fg: #000000;
     --card: #ffffff;
-    --day-bg: #f2f2f7;
+    --fg: #000000;
     --accent: #007aff;
+    --secondary: #8e8e93;
+    --border: rgba(0,0,0,0.1);
     --danger: #ff3b30;
     --success: #34c759;
-    --border: #d1d1d6;
-    --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    --radius: 12px;
+    --radius: 14px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
   }
 
   body.dark {
     --bg: #000000;
-    --fg: #ffffff;
     --card: #1c1c1e;
-    --day-bg: #1c1c1e;
+    --fg: #ffffff;
     --accent: #0a84ff;
+    --secondary: #8e8e93;
+    --border: rgba(255,255,255,0.1);
     --danger: #ff453a;
     --success: #32d74b;
-    --border: #38383a;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 
-  * {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -53,97 +47,78 @@
     background: var(--bg);
     color: var(--fg);
     transition: 0.3s;
-    font-size: 16px;
     line-height: 1.4;
   }
 
   /* AUTH SCREEN */
   #authScreen {
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     padding: 20px;
-    background: var(--bg);
   }
 
   .auth-card {
     background: var(--card);
-    padding: 40px 24px;
-    border-radius: 32px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-    max-width: 360px;
     width: 100%;
+    max-width: 360px;
+    padding: 40px 24px;
+    border-radius: 30px;
     text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
   }
 
-  body.dark .auth-card {
-    border: 1px solid var(--border);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-  }
+  body.dark .auth-card { box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid var(--border); }
 
-  #authScreen h1 {
-    font-size: 1.8rem;
-    margin-bottom: 12px;
-    font-weight: 800;
-  }
-
-  #authScreen p {
-    font-size: 1rem;
-    opacity: 0.7;
-    margin-bottom: 32px;
-  }
+  .auth-card h1 { font-size: 1.8rem; margin: 0 0 12px; font-weight: 800; }
+  .auth-card p { color: var(--secondary); margin-bottom: 32px; font-size: 1rem; }
 
   #loginBtn {
     background: var(--accent);
     color: white;
     border: none;
-    padding: 16px;
-    border-radius: 12px;
+    width: 100%;
+    padding: 18px;
+    border-radius: 18px;
     font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
-    width: 100%;
-    margin-bottom: 24px;
     transition: 0.2s;
+    margin-bottom: 24px;
   }
+  #loginBtn:active { transform: scale(0.96); opacity: 0.9; }
 
-  #loginBtn:active { transform: scale(0.97); }
+  /* APP LAYOUT */
+  #appContainer { display: none; }
 
-  /* NAVIGATION */
   nav {
     position: fixed;
-    bottom: 20px;
+    bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 32px);
-    max-width: 450px;
-    background: rgba(255, 255, 255, 0.8);
+    max-width: 500px;
+    background: rgba(var(--card), 0.8);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    padding: 6px;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     display: flex;
-    justify-content: space-around;
+    padding: 8px;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     z-index: 1000;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
   }
-
-  body.dark nav {
-    background: rgba(28, 28, 30, 0.8);
-    border-color: rgba(255, 255, 255, 0.05);
-  }
+  body.dark nav { background: rgba(28,28,30,0.85); }
 
   nav button {
     flex: 1;
-    background: transparent;
+    background: none;
     border: none;
     color: var(--fg);
-    padding: 8px 4px;
     font-size: 10px;
     font-weight: 600;
-    cursor: pointer;
+    padding: 8px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -151,9 +126,8 @@
     opacity: 0.4;
     transition: 0.2s;
   }
-
   nav button.active { opacity: 1; color: var(--accent); }
-  nav button::before { font-size: 18px; }
+  nav button::before { font-size: 20px; margin-bottom: 2px; }
 
   .nav-today::before { content: "📅"; }
   .nav-training::before { content: "🏋️"; }
@@ -163,366 +137,276 @@
   .nav-theme::before { content: "🌗"; }
   .nav-logout::before { content: "🚪"; }
 
-  /* CONTAINER */
   .container {
     max-width: 600px;
     margin: 0 auto;
-    padding: 24px 16px 120px;
+    padding: 40px 16px 140px;
     display: none;
   }
 
-  #training { display: block; }
+  /* BUTTONS */
+  .btn {
+    border: none;
+    padding: 12px 20px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-secondary { background: var(--card); color: var(--fg); border: 1px solid var(--border); }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn:active { transform: scale(0.97); }
 
   /* CARDS */
   .day {
     background: var(--card);
     padding: 20px;
+    border-radius: 24px;
     margin-bottom: 24px;
-    border-radius: 20px;
     box-shadow: var(--shadow);
   }
 
   .exercise-row {
-    background: var(--day-bg);
+    background: var(--bg);
     padding: 16px;
-    border-radius: 16px;
+    border-radius: 18px;
     margin-bottom: 12px;
     border: 1px solid var(--border);
   }
 
-  /* BUTTONS */
-  .btn {
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.95rem;
-    display: inline-flex;
+  .exercise-header {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: 0.2s;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  .exercise-header input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    margin-right: 12px;
+    accent-color: var(--accent);
+  }
+  .exercise-title { font-weight: 700; font-size: 1.05rem; }
+
+  .exercise-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-secondary { background: var(--day-bg); color: var(--fg); border: 1px solid var(--border); }
-  .btn-danger { background: var(--danger); color: white; }
-
-  .btn:active { transform: scale(0.96); }
-
-  /* INPUTS */
   .input-group {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 8px 12px;
     display: flex;
     align-items: center;
+    flex: 1;
+    max-width: 110px;
   }
+  .input-group input {
+    border: none;
+    background: none;
+    color: var(--fg);
+    width: 100%;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: center;
+    outline: none;
+  }
+  .input-group span { font-size: 0.75rem; color: var(--secondary); font-weight: 700; }
 
-  input, select, textarea {
+  .rpe-select {
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
     background: var(--card);
     color: var(--fg);
-    border: 1px solid var(--border);
-    padding: 12px;
-    border-radius: 12px;
-    font-size: 1rem;
-    width: 100%;
+    font-weight: 700;
+    padding: 0 10px;
+    width: 80px;
     outline: none;
+  }
+
+  .comment-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .comment-star {
+    position: absolute; top: -2px; right: -2px; width: 10px; height: 10px;
+    background: var(--accent); border-radius: 50%; border: 2px solid var(--card); visibility: hidden;
   }
 
   /* FORMS */
   .edit-form {
     background: var(--card);
     padding: 24px;
-    border-radius: 20px;
+    border-radius: 24px;
+    margin: 20px 0;
     border: 2px solid var(--accent);
-    margin: 24px 0;
     display: none;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   }
+  .edit-form.active { display: block; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-  .edit-form.active { display: block; animation: slideUp 0.3s ease-out; }
-
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  .edit-form label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--secondary); margin-bottom: 6px; }
+  .edit-form input, .edit-form select {
+    width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--fg); margin-bottom: 16px; font-size: 1rem;
   }
 
   .editable-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--card);
-    padding: 12px 16px;
-    border-radius: 16px;
-    margin-bottom: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--card); padding: 14px 18px; border-radius: 18px; margin-bottom: 10px;
     border: 1px solid var(--border);
-    box-shadow: var(--shadow);
   }
 
-  /* EXERCISE ROW POLISH */
-  .exercise-row {
-    background: var(--card);
-    padding: 20px;
-    border-radius: 20px;
-    margin-bottom: 16px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-  }
-
-  .input-group {
-    background: var(--day-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    transition: 0.2s;
-  }
-
-  .input-group:focus-within {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.1);
-  }
-
-  .weight-input::-webkit-inner-spin-button, 
-  .weight-input::-webkit-outer-spin-button { 
-    -webkit-appearance: none; 
-    margin: 0; 
-  }
-
-  /* DARK MODE INPUTS FIX */
-  body.dark input, body.dark select, body.dark textarea {
-    background: #2c2c2e;
-    border-color: #38383a;
-  }
-
-  body.dark .input-group {
-    background: #2c2c2e;
-  }
-
-  /* PROGRESS */
-  .progress-container {
-    height: 8px;
-    background: var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 16px 0 32px;
-  }
-
-  .progress-bar {
-    height: 100%;
-    background: var(--accent);
-    transition: width 0.5s ease;
-  }
-
-  /* STATS */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .stat-card {
-    background: var(--card);
-    padding: 16px;
-    border-radius: 16px;
-    text-align: center;
-    box-shadow: var(--shadow);
-  }
-
-  .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
-  .stat-label { font-size: 0.8rem; opacity: 0.6; }
+  /* STATS GRID */
+  .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--card); padding: 20px; border-radius: 20px; text-align: center; box-shadow: var(--shadow); }
+  .stat-value { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 0.8rem; font-weight: 600; opacity: 0.6; }
 
   @media (min-width: 768px) {
     .container { max-width: 800px; }
     .stats-grid { grid-template-columns: repeat(4, 1fr); }
-    nav { max-width: 500px; left: 50%; transform: translateX(-50%); }
+    nav { max-width: 500px; bottom: 30px; }
   }
 </style>
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
 <div id="authScreen">
   <div class="auth-card">
-    <h1>🏋️ План Тренировок</h1>
-    <p>
-      Персональный план тренировок на 12 недель с отслеживанием прогресса
-    </p>
+    <h1>🏋️ План Роста</h1>
+    <p>Твой личный тренер на 12 недель. Просто войди и начни.</p>
     <button id="loginBtn">Войти</button>
-    <div style="font-size: 0.9rem; color: #888; text-align: left; background: var(--day-bg); padding: 16px; border-radius: 16px;">
-      💡 Придумайте свой уникальный логин. Он понадобится для сохранения тренировок на любом устройстве.
+    <div style="font-size: 0.85rem; color: var(--secondary); text-align: left; background: var(--bg); padding: 16px; border-radius: 16px;">
+      💡 Используй любой логин. Все данные будут сохранены в облаке автоматически.
     </div>
   </div>
 </div>
 
-<!-- APP CONTAINER -->
 <div id="appContainer">
+  <nav id="mainNav">
+    <button onclick="showToday()" class="nav-today">Сегодня</button>
+    <button onclick="showPage('training')" class="nav-training active">План</button>
+    <button onclick="showPage('nutrition')" class="nav-nutrition">Питание</button>
+    <button onclick="showPage('supplements')" class="nav-supps">Добавки</button>
+    <button onclick="showPage('stats')" class="nav-stats">Статы</button>
+    <button onclick="toggleTheme()" class="nav-theme">Тема</button>
+    <button onclick="logout()" class="nav-logout" style="color: var(--danger);">Выход</button>
+  </nav>
 
-<nav id="mainNav">
-  <button onclick="showToday()" class="nav-today">Сегодня</button>
-  <button onclick="showPage('training')" class="nav-training active">План</button>
-  <button onclick="showPage('nutrition')" class="nav-nutrition">Питание</button>
-  <button onclick="showPage('supplements')" class="nav-supps">Добавки</button>
-  <button onclick="showPage('stats')" class="nav-stats">Статы</button>
-  <button onclick="toggleTheme()" class="nav-theme">Тема</button>
-  <button onclick="logout()" class="nav-logout" style="color: var(--danger);">Выход</button>
-</nav>
+  <div id="training" class="container">
+    <button onclick="nextWeek()" class="btn btn-primary" style="width:100%; margin-bottom:32px; height: 56px;">Следующая неделя</button>
+    
+    <div id="trainingEditor">
+      <h2>Дни тренировок</h2>
+      <ul id="daysEditor" style="padding:0; list-style:none; margin:0 0 16px;"></ul>
+      <button id="addDayBtn" class="btn btn-secondary" style="width:100%;">+ Добавить день</button>
+      
+      <div id="dayEditForm" class="edit-form">
+        <label>НАЗВАНИЕ ДНЯ</label>
+        <input type="text" id="dayNameInput" placeholder="Например: Ноги">
+        <label>ДЕНЬ НЕДЕЛИ</label>
+        <select id="dayWeekdaySelect">
+          <option value="1">Понедельник</option>
+          <option value="2">Вторник</option>
+          <option value="3">Среда</option>
+          <option value="4">Четверг</option>
+          <option value="5">Пятница</option>
+          <option value="6">Суббота</option>
+          <option value="0">Воскресенье</option>
+        </select>
+        <div style="display:flex; gap:12px;">
+          <button class="btn btn-primary" id="saveDayBtn" style="flex:1;">Сохранить</button>
+          <button class="btn btn-secondary" id="cancelDayBtn" style="flex:1;">Отмена</button>
+        </div>
+      </div>
+      
+      <hr style="margin:32px 0; border:0; border-top:1px solid var(--border);">
 
-<!-- TRAINING -->
-<div id="training" class="container">
-
-  <button onclick="nextWeek()" class="btn btn-primary next-week-btn" style="width:100%; margin-bottom:24px; padding:16px;">Следующая неделя</button>
-<div id="trainingEditor">
-
-  <h2>Дни тренировок</h2>
-  <ul id="daysEditor" class="editable-list" style="padding:0; list-style:none;"></ul>
-  <button id="addDayBtn" class="btn btn-secondary" style="width:100%; margin-top:8px;">+ Добавить день</button>
-  
-  <div id="dayEditForm" class="edit-form">
-    <label>Название дня:</label>
-    <input type="text" id="dayNameInput" placeholder="Например: Понедельник">
-    <label>День недели:</label>
-    <select id="dayWeekdaySelect">
-      <option value="1">Понедельник</option>
-      <option value="2">Вторник</option>
-      <option value="3">Среда</option>
-      <option value="4">Четверг</option>
-      <option value="5">Пятница</option>
-      <option value="6">Суббота</option>
-      <option value="0">Воскресенье</option>
-    </select>
-    <div style="display:flex; gap:12px;">
-      <button class="btn btn-primary" id="saveDayBtn" style="flex:1;">💾 Сохранить</button>
-      <button class="btn btn-secondary" id="cancelDayBtn" style="flex:1;">❌ Отмена</button>
-    </div>
-  </div>
-  
-  <hr style="margin:24px 0; border:0; border-top:1px solid var(--border);">
-
-  <h2>Редактор упражнений</h2>
-  <div id="daySelector" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"></div>
-  <button id="addExerciseBtn" class="btn btn-secondary" style="width:100%;">+ Добавить упражнение</button>
-  
-  <div id="exerciseEditForm" class="edit-form">
-    <label>Название упражнения:</label>
-    <input type="text" id="exerciseNameInput" placeholder="Например: Жим лёжа">
-    <label>Подходы:</label>
-    <input type="number" id="exerciseSetsInput" placeholder="Например: 4" min="1">
-    <label>Повторения:</label>
-    <input type="text" id="exerciseRepsInput" placeholder="Например: 8-10">
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-      <input type="checkbox" id="exerciseHasWeightInput" style="width:20px; height:20px; margin:0;">
-      <label for="exerciseHasWeightInput" style="margin:0;">Есть вес</label>
-    </div>
-    <div style="display:flex; gap:12px;">
-      <button class="btn btn-primary" id="saveExerciseBtn" style="flex:1;">💾 Сохранить</button>
-      <button class="btn btn-secondary" id="cancelExerciseBtn" style="flex:1;">❌ Отмена</button>
-    </div>
-  </div>
-  
-  <ul id="exerciseEditorList" class="editable-list" style="padding:0; list-style:none;"></ul>
-  <hr style="margin:24px 0; border:0; border-top:1px solid var(--border);">
-
-</div>
-
-  <h1>План Роста (Неделя <span id="currentWeekNum">1</span>)</h1>
-
-  <h2 style="font-size:1.1rem; opacity:0.8;">Прогресс недели</h2>
-  <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
-
-  <div id="dynamicTrainingDays"></div>
-
-</div>
-
-<!-- NUTRITION -->
-<div id="nutrition" class="container">
-  <h1>Питание</h1>
-
-  <button id="editNutritionBtn" class="btn btn-secondary" style="width:100%; margin-bottom:20px;">✏ Редактировать</button>
-
-  <textarea id="nutritionText" style="width:100%; min-height:180px; padding:12px; border-radius:12px; border:1px solid var(--border); font-size:1rem; resize:vertical; display:none; background: var(--day-bg); color: var(--fg);"></textarea>
-
-  <div id="nutritionView" style="white-space:pre-wrap; background: var(--day-bg); padding:20px; border-radius:12px; font-size:1.05rem;"></div>
-</div>
-
-<!-- SUPPLEMENTS -->
-<div id="supplements" class="container">
-  <h1>Добавки</h1>
-
-  <button id="editSupplementsBtn" class="btn btn-secondary" style="width:100%; margin-bottom:20px;">✏ Редактировать</button>
-
-  <div style="display:grid; gap:20px;">
-    <div class="supplement-card" style="background:var(--card); padding:16px; border-radius:20px; border:1px solid var(--border);">
-      <h3 style="margin-bottom:8px;">🌅 Завтрак</h3>
-      <textarea id="supplementBreakfastText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
-      <div id="supplementBreakfastView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
+      <h2>Редактор упражнений</h2>
+      <div id="daySelector" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"></div>
+      <button id="addExerciseBtn" class="btn btn-secondary" style="width:100%;">+ Добавить упражнение</button>
+      
+      <div id="exerciseEditForm" class="edit-form">
+        <label>НАЗВАНИЕ УПРАЖНЕНИЯ</label>
+        <input type="text" id="exerciseNameInput" placeholder="Жим штанги">
+        <div style="display:flex; gap:12px;">
+          <div style="flex:1;"><label>ПОДХОДЫ</label><input type="number" id="exerciseSetsInput" placeholder="4"></div>
+          <div style="flex:1;"><label>ПОВТОРЫ</label><input type="text" id="exerciseRepsInput" placeholder="10-12"></div>
+        </div>
+        <label style="display:flex; align-items:center; gap:10px; margin: 10px 0 20px; cursor:pointer;">
+          <input type="checkbox" id="exerciseHasWeightInput" style="width:20px; height:20px; margin:0;">
+          <span>Использовать вес</span>
+        </label>
+        <div style="display:flex; gap:12px;">
+          <button class="btn btn-primary" id="saveExerciseBtn" style="flex:1;">Сохранить</button>
+          <button class="btn btn-secondary" id="cancelExerciseBtn" style="flex:1;">Отмена</button>
+        </div>
+      </div>
+      
+      <ul id="exerciseEditorList" style="padding:0; list-style:none; margin:16px 0 0;"></ul>
+      <hr style="margin:32px 0; border:0; border-top:1px solid var(--border);">
     </div>
 
-    <div class="supplement-card" style="background:var(--card); padding:16px; border-radius:20px; border:1px solid var(--border);">
-      <h3 style="margin-bottom:8px;">🍽 Обед</h3>
-      <textarea id="supplementLunchText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
-      <div id="supplementLunchView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
+    <h1>Неделя <span id="currentWeekNum">1</span></h1>
+    <div style="background: var(--border); height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 24px;">
+      <div id="progressBar" style="background: var(--accent); height: 100%; width: 0%; transition: 0.5s;"></div>
     </div>
 
-    <div class="supplement-card" style="background:var(--card); padding:16px; border-radius:20px; border:1px solid var(--border);">
-      <h3 style="margin-bottom:8px;">🍴 Ужин</h3>
-      <textarea id="supplementDinnerText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
-      <div id="supplementDinnerView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
-    </div>
-
-    <div class="supplement-card" style="background:var(--card); padding:16px; border-radius:20px; border:1px solid var(--border);">
-      <h3 style="margin-bottom:8px;">💪 Перед тренировкой</h3>
-      <textarea id="supplementPreWorkoutText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
-      <div id="supplementPreWorkoutView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
-    </div>
-
-    <div class="supplement-card" style="background:var(--card); padding:16px; border-radius:20px; border:1px solid var(--border);">
-      <h3 style="margin-bottom:8px;">🏋️ После тренировки</h3>
-      <textarea id="supplementPostWorkoutText" class="edit-form" style="width:100%; min-height:80px; margin:0;"></textarea>
-      <div id="supplementPostWorkoutView" style="background:var(--day-bg); padding:16px; border-radius:12px; min-height:44px;"></div>
-    </div>
-  </div>
-</div>
-
-<!-- STATS -->
-<div id="stats" class="container">
-  <h1>Статистика</h1>
-
-<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:20px;">
-  <button onclick="showStatsMode('week')" class="btn btn-primary" id="weekStatsBtn">📅 По неделям</button>
-  <button onclick="showStatsMode('total')" class="btn btn-secondary" id="totalStatsBtn">📊 Общая</button>
-</div>
-
-  <div id="weekStatsContainer">
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
-      <span style="font-weight:600;">Неделя:</span>
-      <select id="statsWeekSelect" style="flex:1; padding:10px; border-radius:12px; border:1px solid var(--border); background:var(--day-bg); color:var(--fg);"></select>
-    </div>
-    <div id="weekSummary"></div>
-    <h3>Упражнения</h3>
-    <div id="rpeStats"></div>
+    <div id="dynamicTrainingDays"></div>
   </div>
 
-  <div id="totalStats" style="display:none;"></div>
+  <div id="nutrition" class="container">
+    <h1>Питание</h1>
+    <button id="editNutritionBtn" class="btn btn-secondary" style="width:100%; margin-bottom:20px;">✏ Редактировать</button>
+    <textarea id="nutritionText" style="width:100%; min-height:200px; padding:16px; border-radius:18px; border:1px solid var(--border); display:none; background: var(--card); color: var(--fg);"></textarea>
+    <div id="nutritionView" style="white-space:pre-wrap; background: var(--card); padding:24px; border-radius:24px; box-shadow: var(--shadow);"></div>
+  </div>
 
-  <hr style="margin:32px 0; border:0; border-top:1px solid var(--border);">
-  <button onclick="resetAllStats()" class="btn btn-danger" style="width:100%;">🚮 Сбросить всю статистику</button>
-</div>
+  <div id="supplements" class="container">
+    <h1>Добавки</h1>
+    <button id="editSupplementsBtn" class="btn btn-secondary" style="width:100%; margin-bottom:24px;">✏ Редактировать</button>
+    <div id="suppsList" style="display:grid; gap:16px;"></div>
+  </div>
 
+  <div id="stats" class="container">
+    <h1>Статистика</h1>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:24px;">
+      <button onclick="showStatsMode('week')" class="btn btn-primary" id="weekStatsBtn">📅 По неделям</button>
+      <button onclick="showStatsMode('total')" class="btn btn-secondary" id="totalStatsBtn">📊 Общая</button>
+    </div>
+    <div id="weekStatsContainer">
+      <select id="statsWeekSelect" style="margin-bottom:20px;"></select>
+      <div id="weekSummary"></div>
+      <h3>Журнал</h3>
+      <div id="rpeStats"></div>
+    </div>
+    <div id="totalStats" style="display:none;"></div>
+    <hr style="margin:40px 0; border:0; border-top:1px solid var(--border);">
+    <button onclick="resetAllStats()" class="btn btn-danger" style="width:100%;">🚮 Полный сброс данных</button>
+  </div>
 </div>
 
 <script src="app.js"></script>
-<script>
-// Регистрация Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
-}
-</script>
-
 </body>
 </html>
