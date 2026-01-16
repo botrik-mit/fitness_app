@@ -457,11 +457,13 @@ function saveDay() {
 
   afterDataChange();
   
-  // Скрываем и очищаем форму после сохранения
-  document.getElementById("dayEditForm").classList.remove("active");
+  // Очищаем поля для следующего добавления (форму НЕ скрываем!)
   document.getElementById("dayNameInput").value = "";
   document.getElementById("dayWeekdaySelect").value = "1";
   editingDayIndex = null;
+  
+  // Фокус обратно на первое поле для быстрого добавления следующего
+  document.getElementById("dayNameInput").focus();
 
   renderDaysEditor();  
   renderDaySelector();
@@ -588,13 +590,15 @@ function saveExercise() {
 
   afterDataChange();
   
-  // Скрываем и очищаем форму после сохранения
-  document.getElementById("exerciseEditForm").classList.remove("active");
+  // Очищаем поля для следующего добавления (форму НЕ скрываем!)
   document.getElementById("exerciseNameInput").value = "";
   document.getElementById("exerciseSetsInput").value = "";
   document.getElementById("exerciseRepsInput").value = "";
   document.getElementById("exerciseHasWeightInput").checked = false;
   editingExerciseIndex = null;
+  
+  // Фокус обратно на первое поле для быстрого добавления следующего
+  document.getElementById("exerciseNameInput").focus();
 
   renderExerciseEditor();
   renderTrainingPlan();
