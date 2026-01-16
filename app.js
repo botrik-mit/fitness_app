@@ -676,6 +676,9 @@ function editTrainingExercise(dayId, i){
   document.getElementById("exerciseRepsInput").value = ex.reps || "";
   document.getElementById("exerciseHasWeightInput").checked = ex.hasWeight || false;
   
+  const form = document.getElementById("exerciseEditForm");
+  form.classList.add("active");
+  form.scrollIntoView({ behavior: 'smooth', block: 'center' });
   document.getElementById("exerciseNameInput").focus();
   
   renderDaySelector();
@@ -732,34 +735,35 @@ daysToRender.forEach(day => {
       if (ex.hasWeight) {
         weightHTML = `
           <div class="input-group">
-            <span>кг</span>
-            <input type="number" class="weight-input" data-id="${ex.id}" step="0.5" placeholder="0">
+            <span style="font-size:0.75rem; font-weight:700; margin-right:8px; opacity:0.5;">КГ</span>
+            <input type="number" class="weight-input" data-id="${ex.id}" step="0.5" placeholder="0" style="width:100%; border:none; background:transparent; color:var(--fg); font-weight:700; outline:none; padding:0; font-size:1.1rem;">
           </div>
-          <div style="font-size:0.75rem; color:#888; margin-top:4px; text-align:center;">
-             Пред: <span class="last-weight" data-id="${ex.id}">-</span>
+          <div style="font-size:0.7rem; color:#888; margin-top:6px; text-align:center; font-weight:500;">
+             БЫЛО: <span class="last-weight" data-id="${ex.id}" style="font-weight:700; color:var(--fg);">-</span>
           </div>
         `;
-      } else {
-        weightHTML = `<div></div><div></div>`;
       }
 
       row.innerHTML = `
-        <label class="exercise-header" style="cursor:pointer; display:flex; width:100%;">
-          <input type="checkbox" class="task" data-id="${ex.id}" style="width:24px; height:24px; cursor:pointer; accent-color:var(--accent); margin-right:12px; flex-shrink:0;">
-          <div class="exercise-title">${title}</div>
+        <label style="cursor:pointer; display:flex; align-items:center; width:100%; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border);">
+          <input type="checkbox" class="task" data-id="${ex.id}" style="width:26px; height:26px; cursor:pointer; accent-color:var(--accent); margin-right:14px; flex-shrink:0; border-radius:6px;">
+          <div style="font-weight:700; font-size:1.1rem; line-height:1.2;">${title}</div>
         </label>
-        <div class="exercise-controls">
-          <div class="weight-col">${weightHTML}</div>
-          <div class="rpe-col">
-            <select class="rpe-select" data-id="${ex.id}">
+        <div style="display: grid; grid-template-columns: ${ex.hasWeight ? '1fr 1fr 48px' : '1fr 48px'}; gap: 12px; align-items: flex-start;">
+          ${ex.hasWeight ? `<div style="min-width: 0;">${weightHTML}</div>` : ''}
+          <div style="min-width: 0;">
+            <select class="rpe-select" data-id="${ex.id}" style="width:100%; height:44px; padding:0 12px; border-radius:12px; border:1px solid var(--border); background:var(--day-bg); color:var(--fg); font-size:0.95rem; font-weight:700; -webkit-appearance:none;">
               <option value="">RPE</option>
               ${[...Array(10)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
             </select>
+            <div style="font-size:0.7rem; text-align:center; margin-top:6px; color:#888; font-weight:500;">УСИЛИЕ</div>
           </div>
-          <div class="comment-col">
-            <button class="comment-btn" data-id="${ex.id}">
-              💬<span class="comment-star"></span>
+          <div>
+            <button class="comment-btn" data-id="${ex.id}" style="width:48px; height:44px; border-radius:12px; border:1px solid var(--border); background:var(--day-bg); cursor:pointer; display:flex; align-items:center; justify-content:center; position:relative;">
+              <span style="font-size:1.4rem;">💬</span>
+              <span class="comment-star" style="position:absolute; top:-4px; right:-4px; width:12px; height:12px; background:var(--accent); border-radius:50%; border:2px solid var(--card); visibility:hidden; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></span>
             </button>
+            <div style="font-size:0.7rem; text-align:center; margin-top:6px; color:#888; font-weight:500;">ИНФО</div>
           </div>
         </div>
       `;
@@ -1427,6 +1431,10 @@ function editDay(index) {
   editingDayIndex = index;
   document.getElementById("dayNameInput").value = day.title || "";
   document.getElementById("dayWeekdaySelect").value = day.weekday || "1";
+  
+  const form = document.getElementById("dayEditForm");
+  form.classList.add("active");
+  form.scrollIntoView({ behavior: 'smooth', block: 'center' });
   document.getElementById("dayNameInput").focus();
 }
 
