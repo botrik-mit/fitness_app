@@ -1,9 +1,11 @@
 /* ==========================================
-   КОНФИГУРАЦИЯ - ЗАМЕНИТЕ НА СВОЙ URL
+   КОНФИГУРАЦИЯ SUPABASE
 ========================================== */
-// URL вашего Google Apps Script (после деплоя как веб-приложение)
-// Получить можно: Apps Script -> Deploy -> New deployment -> Web app
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhCyHh4q8u7VsaLS3JGsxNTF2XvEcSmCrFUbEt_kzBv0W8yXhMmWyscFX9_VvqO2UD/exec';
+const SUPABASE_URL = 'https://ifzksmsmahbleakswryr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmemtzbXNtYWhibGVha3N3cnlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NjM0NzksImV4cCI6MjA4NDEzOTQ3OX0.Kxk6bozJPG35nbSFC6Z2rM7JLQ107M2g6eHdQXFcAAQ';
+
+// Инициализация Supabase клиента
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ==========================================
    АУТЕНТИФИКАЦИЯ
@@ -54,7 +56,7 @@ let isDataLoaded = false;
 let saveTimeout = null;
 
 async function loadFromServer() {
-  console.log('🔍 Загрузка данных с сервера...');
+  console.log('🔍 Загрузка данных из Supabase...');
   console.log('User Email:', userEmail);
   
   if (!userEmail) {
@@ -64,20 +66,23 @@ async function loadFromServer() {
   }
   
   try {
-    // Используем GET запрос с параметрами для обхода CORS
-    const url = `${GOOGLE_APPS_SCRIPT_URL}?action=load&email=${encodeURIComponent(userEmail)}`;
-    const response = await fetch(url, {
-      method: 'GET',
-      redirect: 'follow'
-    });
+    // Загружаем данные из Supabase
+    const { data, error } = await supabase
+      .from('users_data')
+      .select('data')
+      .eq('email', userEmail)
+      .single();
     
-    const data = await response.json();
-    console.log('✅ Данные успешно загружены:', data);
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+      console.error('❌ Ошибка Supabase:', error);
+      throw error;
+    }
     
-    if (data && typeof data === 'object') {
-      appData = data;
+    if (data && data.data) {
+      console.log('✅ Данные успешно загружены из Supabase');
+      appData = data.data;
     } else {
-      console.warn('⚠️ Получены некорректные данные, используем дефолтные');
+      console.log('📝 Новый пользователь - используем дефолтные данные');
       appData = getDefaultData();
     }
     
@@ -105,24 +110,41 @@ async function saveToServer() {
   
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(async function() {
-    console.log('💾 Сохранение данных на сервер...');
+    console.log('💾 Сохранение данных в Supabase...');
     
     try {
-      // Используем GET запрос с параметрами для обхода CORS
-      const dataString = encodeURIComponent(JSON.stringify(appData));
-      const url = `${GOOGLE_APPS_SCRIPT_URL}?action=save&email=${encodeURIComponent(userEmail)}&data=${dataString}`;
+      // Пробуем обновить существующую запись
+      const { data: existingData, error: selectError } = await supabase
+        .from('users_data')
+        .select('id')
+        .eq('email', userEmail)
+        .single();
       
-      const response = await fetch(url, {
-        method: 'GET',
-        redirect: 'follow'
-      });
+      let result;
       
-      const result = await response.json();
-      
-      if (result.success) {
-        console.log('✅ Данные успешно сохранены');
+      if (existingData) {
+        // Обновляем существующую запись
+        result = await supabase
+          .from('users_data')
+          .update({ 
+            data: appData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('email', userEmail);
       } else {
-        console.error('❌ Ошибка сохранения данных:', result.error);
+        // Создаем новую запись
+        result = await supabase
+          .from('users_data')
+          .insert([{ 
+            email: userEmail, 
+            data: appData 
+          }]);
+      }
+      
+      if (result.error) {
+        console.error('❌ Ошибка сохранения:', result.error);
+      } else {
+        console.log('✅ Данные успешно сохранены в Supabase');
       }
       
     } catch (error) {
@@ -137,21 +159,40 @@ async function saveToServerImmediately() {
   clearTimeout(saveTimeout);
   
   try {
-    // Используем GET запрос с параметрами для обхода CORS
-    const dataString = encodeURIComponent(JSON.stringify(appData));
-    const url = `${GOOGLE_APPS_SCRIPT_URL}?action=save&email=${encodeURIComponent(userEmail)}&data=${dataString}`;
+    console.log('💾 Немедленное сохранение данных в Supabase...');
     
-    const response = await fetch(url, {
-      method: 'GET',
-      redirect: 'follow'
-    });
+    // Пробуем обновить существующую запись
+    const { data: existingData, error: selectError } = await supabase
+      .from('users_data')
+      .select('id')
+      .eq('email', userEmail)
+      .single();
     
-    const result = await response.json();
+    let result;
     
-    if (result.success) {
-      console.log('✅ Данные успешно сохранены');
+    if (existingData) {
+      // Обновляем существующую запись
+      result = await supabase
+        .from('users_data')
+        .update({ 
+          data: appData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('email', userEmail);
     } else {
-      console.error('❌ Ошибка сохранения данных:', result.error);
+      // Создаем новую запись
+      result = await supabase
+        .from('users_data')
+        .insert([{ 
+          email: userEmail, 
+          data: appData 
+        }]);
+    }
+    
+    if (result.error) {
+      console.error('❌ Ошибка сохранения:', result.error);
+    } else {
+      console.log('✅ Данные успешно сохранены в Supabase');
     }
     
   } catch (error) {
