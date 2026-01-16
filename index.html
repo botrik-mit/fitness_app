@@ -254,15 +254,14 @@
     .exercise-right { 
       width: 100%; 
       display: grid;
-      grid-template-columns: 70px 55px 1fr 38px;
+      grid-template-columns: 70px 55px 90px 38px;
       gap: 8px;
       align-items: center;
-      justify-items: end;
     }
     
-    .weight-input { width: 100% !important; min-height: 38px; font-size: 1em !important; justify-self: start; }
-    .last-weight { min-width: auto; justify-self: start; }
-    .rpe-select { width: 90px; min-height: 38px; font-size: 0.9em; }
+    .weight-input { width: 100% !important; min-height: 38px; font-size: 1em !important; }
+    .last-weight { min-width: auto; font-size: 0.75em; }
+    .rpe-select { width: 100%; min-height: 38px; font-size: 0.9em; }
     .comment-btn { width: 38px; height: 38px; font-size: 1.2em; }
     
     .editable-item, .exercise-editor-item { padding: 10px !important; }
@@ -307,6 +306,7 @@
   <button onclick="showPage('supplements')">Добавки</button>
   <button onclick="showPage('stats')">Статистика</button>
   <button class="toggle-theme" onclick="toggleTheme()">Тема</button>
+  <button onclick="logout()" style="color: #ff4d4f;">Выход</button>
 </nav>
 
 <!-- TRAINING -->

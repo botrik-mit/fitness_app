@@ -36,6 +36,15 @@ function showApp() {
   loadFromServer();
 }
 
+// Выход из аккаунта
+function logout() {
+  if (confirm('Выйти из аккаунта? Несохраненные данные будут потеряны.')) {
+    localStorage.removeItem('userEmail');
+    userEmail = null;
+    window.location.reload();
+  }
+}
+
 document.getElementById('loginBtn').onclick = function() {
   const email = prompt('Придумайте свой уникальный логин:');
   
