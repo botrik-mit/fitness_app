@@ -251,11 +251,18 @@
     input[type="checkbox"] { width: 22px; height: 22px; margin-right: 10px; }
     
     .exercise-row { flex-direction: column; align-items: flex-start; gap: 10px; padding: 5px 0; border-bottom: 1px solid rgba(128,128,128,0.1); }
-    .exercise-right { width: 100%; justify-content: space-between; gap: 8px; }
+    .exercise-right { 
+      width: 100%; 
+      display: grid;
+      grid-template-columns: 70px 55px 1fr 38px;
+      gap: 8px;
+      align-items: center;
+      justify-items: end;
+    }
     
-    .weight-input { width: 70px !important; min-height: 38px; font-size: 1em !important; }
-    .rpe-select { min-height: 38px; font-size: 0.9em; min-width: 90px; max-width: 120px; }
-    .exercise-right { gap: 10px; }
+    .weight-input { width: 100% !important; min-height: 38px; font-size: 1em !important; justify-self: start; }
+    .last-weight { min-width: auto; justify-self: start; }
+    .rpe-select { width: 90px; min-height: 38px; font-size: 0.9em; }
     .comment-btn { width: 38px; height: 38px; font-size: 1.2em; }
     
     .editable-item, .exercise-editor-item { padding: 10px !important; }
