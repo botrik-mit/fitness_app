@@ -56,11 +56,7 @@ let isDataLoaded = false;
 let saveTimeout = null;
 
 async function loadFromServer() {
-  console.log('🔍 Загрузка данных из Supabase...');
-  console.log('User Email:', userEmail);
-  
   if (!userEmail) {
-    console.error('❌ ОШИБКА: Email не определен');
     showAuth();
     return;
   }
@@ -74,15 +70,12 @@ async function loadFromServer() {
       .single();
     
     if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
-      console.error('❌ Ошибка Supabase:', error);
       throw error;
     }
     
     if (data && data.data) {
-      console.log('✅ Данные успешно загружены из Supabase');
       appData = data.data;
     } else {
-      console.log('📝 Новый пользователь - используем дефолтные данные');
       appData = getDefaultData();
     }
     
@@ -90,7 +83,6 @@ async function loadFromServer() {
     applyLoadedData();
     
   } catch (error) {
-    console.error('❌ Ошибка загрузки данных:', error);
     appData = getDefaultData();
     isDataLoaded = true;
     applyLoadedData();
@@ -98,20 +90,12 @@ async function loadFromServer() {
 }
 
 async function saveToServer() {
-  if (!isDataLoaded) {
-    console.warn('⚠️ Данные еще не загружены, пропускаем сохранение');
-    return;
-  }
-  
-  if (!userEmail) {
-    console.error('❌ Email не определен для сохранения');
+  if (!isDataLoaded || !userEmail) {
     return;
   }
   
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(async function() {
-    console.log('💾 Сохранение данных в Supabase...');
-    
     try {
       // Пробуем обновить существующую запись
       const { data: existingData, error: selectError } = await supabaseClient
@@ -141,14 +125,8 @@ async function saveToServer() {
           }]);
       }
       
-      if (result.error) {
-        console.error('❌ Ошибка сохранения:', result.error);
-      } else {
-        console.log('✅ Данные успешно сохранены в Supabase');
-      }
-      
     } catch (error) {
-      console.error('❌ Ошибка сохранения:', error);
+      // Тихо игнорируем ошибки
     }
   }, 500);
 }
@@ -159,8 +137,6 @@ async function saveToServerImmediately() {
   clearTimeout(saveTimeout);
   
   try {
-    console.log('💾 Немедленное сохранение данных в Supabase...');
-    
     // Пробуем обновить существующую запись
     const { data: existingData, error: selectError } = await supabaseClient
       .from('user_data')
@@ -189,14 +165,8 @@ async function saveToServerImmediately() {
         }]);
     }
     
-    if (result.error) {
-      console.error('❌ Ошибка сохранения:', result.error);
-    } else {
-      console.log('✅ Данные успешно сохранены в Supabase');
-    }
-    
   } catch (error) {
-    console.error('❌ Ошибка сохранения:', error);
+    // Тихо игнорируем ошибки
   }
 }
 

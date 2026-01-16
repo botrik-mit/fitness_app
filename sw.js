@@ -9,37 +9,25 @@ const urlsToCache = [
 
 // Установка Service Worker
 self.addEventListener('install', (event) => {
-  console.log('[SW] Установка Service Worker');
-  
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[SW] Кеширование файлов приложения');
-        return cache.addAll(urlsToCache);
-      })
+      .then((cache) => cache.addAll(urlsToCache))
       .then(() => self.skipWaiting())
   );
 });
 
 // Активация Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Активация Service Worker');
-  
   event.waitUntil(
-    // Очистка старых кешей
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Удаление старого кэша:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => {
-      // Захватываем все открытые вкладки
-      return self.clients.claim();
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
