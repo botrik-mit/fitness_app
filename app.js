@@ -26,6 +26,7 @@ function showApp() {
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('appContainer').style.display = 'block';
   loadFromServer();
+  showPage('training'); // Показываем страницу тренировок при загрузке
 }
 
 function logout() {
@@ -208,6 +209,8 @@ function updateProgress() {
   const done = [...tasks].filter(t => t.checked).length;
   const percent = tasks.length ? Math.round(done / tasks.length * 100) : 0;
   document.getElementById('progressBar').style.width = percent + '%';
+  const percentEl = document.getElementById('progressPercent');
+  if (percentEl) percentEl.textContent = percent + '%';
 }
 
 function nextWeek() {
@@ -321,8 +324,29 @@ function editEx(idx) {
   document.getElementById("exerciseEditForm").classList.add("active");
 }
 
-document.getElementById("addDayBtn").onclick = () => { editingDayIdx = null; document.getElementById("dayEditForm").classList.toggle("active"); };
-document.getElementById("addExerciseBtn").onclick = () => { editingExIdx = null; document.getElementById("exerciseEditForm").classList.toggle("active"); };
+document.getElementById("addDayBtn").onclick = () => { 
+  editingDayIdx = null; 
+  document.getElementById("dayNameInput").value = "";
+  document.getElementById("dayWeekdaySelect").value = "1";
+  document.getElementById("dayEditForm").classList.toggle("active"); 
+};
+
+document.getElementById("addExerciseBtn").onclick = () => { 
+  editingExIdx = null;
+  document.getElementById("exerciseNameInput").value = "";
+  document.getElementById("exerciseSetsInput").value = "";
+  document.getElementById("exerciseRepsInput").value = "";
+  document.getElementById("exerciseHasWeightInput").checked = false;
+  document.getElementById("exerciseEditForm").classList.toggle("active"); 
+};
+
+document.getElementById("cancelDayBtn").onclick = () => {
+  document.getElementById("dayEditForm").classList.remove("active");
+};
+
+document.getElementById("cancelExerciseBtn").onclick = () => {
+  document.getElementById("exerciseEditForm").classList.remove("active");
+};
 
 document.getElementById("saveDayBtn").onclick = () => {
   const title = document.getElementById("dayNameInput").value;
@@ -349,6 +373,14 @@ document.getElementById("saveExerciseBtn").onclick = () => {
   document.getElementById("exerciseEditForm").classList.remove("active");
   renderAll(); saveToServer();
 };
+
+function moveDay(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= trainingData.days.length) return;
+  [trainingData.days[idx], trainingData.days[newIdx]] = [trainingData.days[newIdx], trainingData.days[idx]];
+  renderAll();
+  saveToServer();
+}
 
 function deleteDay(idx) { if (confirm("Удалить день?")) { trainingData.days.splice(idx, 1); renderAll(); saveToServer(); } }
 function deleteEx(idx) { 
@@ -384,9 +416,9 @@ function renderSupplements() {
     div.className = "stat-card";
     div.style.textAlign = "left";
     div.innerHTML = `
-      <div style="font-weight:800; margin-bottom:8px;">${names[key]}</div>
-      <div id="supp_view_${key}" style="font-size:0.95rem; opacity:0.8; white-space:pre-wrap;">${appData.supplements[key] || "—"}</div>
-      <textarea id="supp_edit_${key}" style="display:none; margin-top:10px; height:80px;">${appData.supplements[key] || ""}</textarea>
+      <div style="font-weight:800; margin-bottom:12px; font-size:1.1rem;">${names[key]}</div>
+      <div id="supp_view_${key}" style="font-size:1rem; opacity:0.85; white-space:pre-wrap; line-height:1.6;">${appData.supplements[key] || "—"}</div>
+      <textarea id="supp_edit_${key}" style="display:none; margin-top:12px; height:90px; width:100%; padding:12px; border-radius:12px; border:2px solid var(--border); background:var(--bg); color:var(--fg); font-size:1rem; resize:vertical; font-family:inherit; transition: all 0.2s ease;" onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 0 3px rgba(0, 122, 255, 0.1)';" onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='none';">${appData.supplements[key] || ""}</textarea>
     `;
     container.appendChild(div);
   }
