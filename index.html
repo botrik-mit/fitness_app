@@ -12,9 +12,6 @@
 <link rel="manifest" href="manifest.json">
 <title>План Роста и Тренировок</title>
 
-<!-- Google Sign-In -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-
 <style>
   :root {
     --bg: #f5f5f5;
@@ -58,11 +55,22 @@
     color: var(--accent);
   }
   
-  /* Google Sign-In кнопка центрирована */
-  .g_id_signin {
-    margin: 20px auto;
-    display: flex;
-    justify-content: center;
+  #loginBtn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(74, 125, 255, 0.3);
+    transition: 0.2s;
+  }
+  
+  #loginBtn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
   }
   
   #appContainer {
@@ -208,25 +216,10 @@
 <!-- AUTH SCREEN -->
 <div id="authScreen">
   <h1>🏋️ План Роста и Тренировок</h1>
-  <p>Войдите с помощью Google для синхронизации данных</p>
-  
-  <!-- Google Sign-In кнопка -->
-  <div id="g_id_onload"
-       data-client_id="YOUR_CLIENT_ID.apps.googleusercontent.com"
-       data-callback="handleCredentialResponse"
-       data-auto_prompt="false">
-  </div>
-  <div class="g_id_signin"
-       data-type="standard"
-       data-size="large"
-       data-theme="outline"
-       data-text="sign_in_with"
-       data-shape="rectangular"
-       data-logo_alignment="left">
-  </div>
-  
+  <p>Войдите с помощью email для сохранения данных</p>
+  <button id="loginBtn">Войти</button>
   <p style="margin-top: 20px; font-size: 0.9em; color: #888;">
-    Ваши данные будут синхронизироваться с Google Sheets
+    Введите ваш email для синхронизации данных с Google Sheets
   </p>
 </div>
 
@@ -240,7 +233,6 @@
   <button onclick="showPage('supplements')">Добавки</button>
   <button onclick="showPage('stats')">Статистика</button>
   <button class="toggle-theme" onclick="toggleTheme()">Тема</button>
-  <button onclick="logout()" style="color: #ff4d4f;">Выход</button>
 </nav>
 
 <!-- TRAINING -->
