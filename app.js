@@ -37,7 +37,7 @@ function showApp() {
 }
 
 document.getElementById('loginBtn').onclick = function() {
-  const email = prompt('Придумайте свой логин (например, ваш email):');
+  const email = prompt('Придумайте свой уникальный логин:');
   
   if (email && email.trim()) {
     userEmail = email.trim();
