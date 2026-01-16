@@ -4,6 +4,7 @@
 const SUPABASE_URL = 'https://ifzksmsmahbleakswryr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmemtzbXNtYWhibGVha3N3cnlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NjM0NzksImV4cCI6MjA4NDEzOTQ3OX0.Kxk6bozJPG35nbSFC6Z2rM7JLQ107M2g6eHdQXFcAAQ';
 
+// Инициализация Supabase клиента
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ==========================================
@@ -11,71 +12,171 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 ========================================== */
 let userEmail = null;
 
+// Проверка наличия сохраненного email
 function checkAuth() {
   userEmail = localStorage.getItem('userEmail');
-  if (userEmail) showApp();
-  else showAuth();
+  
+  if (userEmail) {
+    showApp();
+  } else {
+    showAuth();
+  }
 }
 
 function showAuth() {
-  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('authScreen').style.display = 'block';
   document.getElementById('appContainer').style.display = 'none';
 }
 
 function showApp() {
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('appContainer').style.display = 'block';
+  
+  // Загружаем данные после показа приложения
   loadFromServer();
-  showPage('training'); // Показываем страницу тренировок при загрузке
 }
 
+// Выход из аккаунта
 function logout() {
-  if (confirm('Выйти из аккаунта?')) {
+  if (confirm('Выйти из аккаунта? Несохраненные данные будут потеряны.')) {
     localStorage.removeItem('userEmail');
+    userEmail = null;
     window.location.reload();
   }
 }
 
-document.getElementById('loginBtn').onclick = () => {
-  const email = prompt('Придумайте логин:');
-  if (email?.trim()) {
+document.getElementById('loginBtn').onclick = function() {
+  const email = prompt('Придумайте свой уникальный логин:');
+  
+  if (email && email.trim()) {
     userEmail = email.trim();
     localStorage.setItem('userEmail', userEmail);
     showApp();
+  } else if (email !== null) {
+    alert('⚠️ Логин не может быть пустым. Попробуйте снова.');
   }
 };
 
 /* ==========================================
-   ДАННЫЕ И API
+   API - РАБОТА С GOOGLE APPS SCRIPT
 ========================================== */
 let appData = {};
 let isDataLoaded = false;
 let saveTimeout = null;
 
 async function loadFromServer() {
+  if (!userEmail) {
+    showAuth();
+    return;
+  }
+  
   try {
-    const { data, error } = await supabaseClient.from('user_data').select('data').eq('email', userEmail).single();
-    if (data?.data) appData = data.data;
-    else appData = getDefaultData();
+    // Загружаем данные из Supabase
+    const { data, error } = await supabaseClient
+      .from('user_data')
+      .select('data')
+      .eq('email', userEmail)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+      throw error;
+    }
+    
+    if (data && data.data) {
+      appData = data.data;
+    } else {
+      appData = getDefaultData();
+    }
+    
     isDataLoaded = true;
     applyLoadedData();
-  } catch (e) {
+    
+  } catch (error) {
     appData = getDefaultData();
     isDataLoaded = true;
     applyLoadedData();
   }
 }
 
-function saveToServer() {
-  if (!isDataLoaded || !userEmail) return;
+async function saveToServer() {
+  if (!isDataLoaded || !userEmail) {
+    return;
+  }
+  
   clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(async () => {
+  saveTimeout = setTimeout(async function() {
     try {
-      const { data } = await supabaseClient.from('user_data').select('id').eq('email', userEmail).single();
-      if (data) await supabaseClient.from('user_data').update({ data: appData, updated_at: new Date().toISOString() }).eq('email', userEmail);
-      else await supabaseClient.from('user_data').insert([{ email: userEmail, data: appData }]);
-    } catch (e) {}
-  }, 1000);
+      // Пробуем обновить существующую запись
+      const { data: existingData, error: selectError } = await supabaseClient
+        .from('user_data')
+        .select('id')
+        .eq('email', userEmail)
+        .single();
+      
+      let result;
+      
+      if (existingData) {
+        // Обновляем существующую запись
+        result = await supabaseClient
+          .from('user_data')
+          .update({ 
+            data: appData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('email', userEmail);
+      } else {
+        // Создаем новую запись
+        result = await supabaseClient
+          .from('user_data')
+          .insert([{ 
+            email: userEmail, 
+            data: appData 
+          }]);
+      }
+      
+    } catch (error) {
+      // Тихо игнорируем ошибки
+    }
+  }, 500);
+}
+
+async function saveToServerImmediately() {
+  if (!isDataLoaded || !userEmail) return;
+  
+  clearTimeout(saveTimeout);
+  
+  try {
+    // Пробуем обновить существующую запись
+    const { data: existingData, error: selectError } = await supabaseClient
+      .from('user_data')
+      .select('id')
+      .eq('email', userEmail)
+      .single();
+    
+    let result;
+    
+    if (existingData) {
+      // Обновляем существующую запись
+      result = await supabaseClient
+        .from('user_data')
+        .update({ 
+          data: appData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('email', userEmail);
+    } else {
+      // Создаем новую запись
+      result = await supabaseClient
+        .from('user_data')
+        .insert([{ 
+          email: userEmail, 
+          data: appData 
+        }]);
+    }
+    
+  } catch (error) {
+    // Тихо игнорируем ошибки
+  }
 }
 
 function getDefaultData() {
@@ -83,411 +184,1284 @@ function getDefaultData() {
     trainingData: {
       days: [
         { id: "mon", title: "Понедельник", weekday: 1, exercises: [] },
+        { id: "tue", title: "Вторник", weekday: 2, exercises: [] },
         { id: "wed", title: "Среда", weekday: 3, exercises: [] },
+        { id: "thu", title: "Четверг", weekday: 4, exercises: [] },
         { id: "fri", title: "Пятница", weekday: 5, exercises: [] }
       ]
     },
     week: 1,
     weekStats: new Array(12).fill(0),
     theme: "light",
-    nutritionText: "Белок: 1.6-2г/кг\nЖиры: 0.8-1г/кг",
-    supplements: { breakfast: "", lunch: "", dinner: "", preWorkout: "", postWorkout: "" },
-    tasks: {}, weights: {}, rpe: {}, comments: {}
+    nutritionText: "Белок: 1.6–2 г/кг\nЖиры: 0.8–1 г/кг\nУглеводы: добор калорий\n+300–400 ккал к норме",
+    supplements: {
+      breakfast: "",
+      lunch: "",
+      dinner: "",
+      preWorkout: "",
+      postWorkout: ""
+    },
+    tasks: {},
+    weights: {},
+    rpe: {},
+    comments: {},
+    progress: 0
   };
 }
 
 /* ==========================================
-   РЕНДЕРИНГ UI
+   ВЕСЬ ОСТАЛЬНОЙ КОД ИЗ ОРИГИНАЛЬНОГО index.html
+   (копируем из тега <script> без изменений)
 ========================================== */
-let trainingData, week, weekStats, selectedDayId;
 
-function applyLoadedData() {
-  if (appData.theme === "dark") document.body.classList.add("dark");
-  trainingData = appData.trainingData;
-  week = appData.week || 1;
-  weekStats = appData.weekStats || new Array(12).fill(0);
-  if (trainingData.days.length && !selectedDayId) selectedDayId = trainingData.days[0].id;
-
-  document.getElementById("nutritionText").value = appData.nutritionText || "";
-  document.getElementById("nutritionView").textContent = appData.nutritionText || "";
-
-  renderAll();
+// ==========================================
+// СИНХРОНИЗАЦИЯ DOM → trainingData
+// ==========================================
+function syncDOMToTrainingData() {
+  if (!week) return;
+  
+  document.querySelectorAll('.weight-input').forEach(input => {
+    const id = input.dataset.id;
+    const value = input.value.trim();
+    if (id) {
+      const key = `weight_w${week}_${id}`;
+      if (value !== '') {
+        appData.weights[key] = value;
+      } else {
+        delete appData.weights[key];
+      }
+    }
+  });
+  
+  document.querySelectorAll('.rpe-select').forEach(select => {
+    const id = select.dataset.id;
+    if (id) {
+      const key = `rpe_w${week}_${id}`;
+      if (select.value) {
+        appData.rpe[key] = select.value;
+      } else {
+        delete appData.rpe[key];
+      }
+    }
+  });
+  
+  document.querySelectorAll('.task').forEach(checkbox => {
+    const id = checkbox.dataset.id;
+    if (id) {
+      const key = `task_${id}`;
+      appData.tasks[key] = checkbox.checked;
+    }
+  });
 }
 
-function renderAll() {
+// ==========================================
+// ЖЁСТКИЙ afterDataChange() - ЕДИНАЯ ТОЧКА ОБНОВЛЕНИЯ
+// ==========================================
+function afterDataChange() {
+  syncDOMToTrainingData();
+  
+  appData.trainingData = trainingData;
+  appData.week = week;
+  appData.weekStats = weekStats;
+  
+  saveToServer();
+  
+  updateAllUI();
+}
+
+// ==========================================
+// ЕДИНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ UI
+// ==========================================
+function updateAllUI() {
+  if (!trainingData) return;
+  
+  updateProgress();
+  updateStats();
+  updateNextWeekButton();
+}
+
+function updateNextWeekButton() {
+  const btn = document.querySelector('.next-week-btn');
+  if (!btn) return;
+  
+  if (!week || week >= 12 || !trainingData) {
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+  } else {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  }
+}
+
+function applyLoadedData() {
+  if (appData.theme === "dark") {
+    document.body.classList.add("dark");
+  }
+  
+  if (!appData.trainingData || !appData.trainingData.days || appData.trainingData.days.length === 0) {
+    appData.trainingData = getDefaultData().trainingData;
+  }
+  if (!appData.week) appData.week = 1;
+  if (!appData.weekStats || !Array.isArray(appData.weekStats)) {
+    appData.weekStats = new Array(12).fill(0);
+  }
+  if (!appData.supplements) appData.supplements = getDefaultData().supplements;
+  if (!appData.tasks) appData.tasks = {};
+  if (!appData.weights) appData.weights = {};
+  if (!appData.rpe) appData.rpe = {};
+  if (!appData.comments) appData.comments = {};
+  if (appData.progress === undefined || appData.progress === null) {
+    appData.progress = 0;
+  }
+  
+  trainingData = appData.trainingData;
+  week = appData.week;
+  weekStats = appData.weekStats;
+  
+  if (trainingData.days.length && !selectedDayId) {
+    selectedDayId = trainingData.days[0].id;
+  }
+  
+  if (appData.nutritionText) {
+    nutritionData = appData.nutritionText;
+    nutritionText.value = nutritionData;
+    nutritionView.textContent = nutritionData;
+  }
+  
+  loadSupplements();
+  
   renderDaysEditor();
   renderDaySelector();
   renderExerciseEditor();
   renderTrainingPlan();
   renderSupplements();
-  updateProgress();
-  updateNextWeekButton();
-}
-
-function renderTrainingPlan() {
-  const container = document.getElementById("dynamicTrainingDays");
-  container.innerHTML = "";
-  document.getElementById("currentWeekNum").textContent = week;
-
-  trainingData.days.forEach(day => {
-    const block = document.createElement("div");
-    block.className = "day";
-    block.innerHTML = `<h3>${day.title}</h3>`;
-
-    day.exercises.forEach(ex => {
-      const row = document.createElement("div");
-      row.className = "exercise-row";
-      
-      const isDone = appData.tasks[`task_${ex.id}`];
-      const weight = appData.weights[`weight_w${week}_${ex.id}`] || "";
-      const currentRpe = appData.rpe[`rpe_w${week}_${ex.id}`] || "";
-
-      row.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <label class="exercise-header" style="margin-bottom: 0; flex: 1;">
-            <input type="checkbox" class="task" data-id="${ex.id}" ${isDone ? 'checked' : ''} onchange="toggleTask('${ex.id}', this.checked)">
-            <div class="exercise-title">${ex.name} — ${ex.sets}×${ex.reps}</div>
-          </label>
-          <button class="comment-btn" onclick="openComment('${ex.id}')">
-            <span>💬</span>
-            <span class="comment-star" id="star_${ex.id}" style="visibility: ${appData.comments[`comment_w${week}_${ex.id}`] ? 'visible' : 'hidden'}"></span>
-          </button>
-        </div>
-        <div class="exercise-controls">
-          ${ex.hasWeight ? `
-            <div class="input-group">
-              <input type="number" step="0.5" placeholder="0" value="${weight}" oninput="updateWeight('${ex.id}', this.value)">
-              <span>кг</span>
-            </div>
-          ` : ''}
-          <div style="flex: 1; max-width: 100px;">
-            <select class="rpe-select" onchange="updateRpe('${ex.id}', this.value)" style="width: 100%;">
-              <option value="">RPE</option>
-              ${[6,7,8,9,10].map(v => `<option value="${v}" ${currentRpe == v ? 'selected' : ''}>${v}</option>`).join("")}
-            </select>
-          </div>
-        </div>
-      `;
-      block.appendChild(row);
-    });
-    container.appendChild(block);
-  });
+  loadWeightsForCurrentWeek();
+  
+  updateAllUI();
 }
 
 /* ==========================================
-   ФУНКЦИИ ВЗАИМОДЕЙСТВИЯ
+   ТЕМА
 ========================================== */
-function toggleTask(id, val) {
-  appData.tasks[`task_${id}`] = val;
-  updateProgress();
-  saveToServer();
-}
-
-function updateWeight(id, val) {
-  appData.weights[`weight_w${week}_${id}`] = val;
-  saveToServer();
-}
-
-function updateRpe(id, val) {
-  appData.rpe[`rpe_w${week}_${id}`] = val;
-  saveToServer();
-}
-
-function openComment(id) {
-  const key = `comment_w${week}_${id}`;
-  const text = prompt("Заметка:", appData.comments[key] || "");
-  if (text !== null) {
-    if (text.trim()) appData.comments[key] = text.trim();
-    else delete appData.comments[key];
-    document.getElementById(`star_${id}`).style.visibility = appData.comments[key] ? 'visible' : 'hidden';
-    saveToServer();
-  }
-}
-
-function updateProgress() {
-  const tasks = document.querySelectorAll(".task");
-  const done = [...tasks].filter(t => t.checked).length;
-  const percent = tasks.length ? Math.round(done / tasks.length * 100) : 0;
-  document.getElementById('progressBar').style.width = percent + '%';
-  const percentEl = document.getElementById('progressPercent');
-  if (percentEl) percentEl.textContent = percent + '%';
-}
-
-function nextWeek() {
-  if (week < 12 && confirm(`Завершить неделю ${week} и перейти к следующей?`)) {
-    appData.weekStats[week - 1] = parseInt(document.getElementById('progressBar').style.width);
-    appData.tasks = {};
-    appData.week++;
-    appData.progress = 0;
-    applyLoadedData();
-    saveToServer();
-  }
-}
-
-function toggleTheme() {
+function toggleTheme(){
   document.body.classList.toggle("dark");
   appData.theme = document.body.classList.contains("dark") ? "dark" : "light";
   saveToServer();
 }
 
-function showPage(id) {
-  document.querySelectorAll(".container").forEach(c => c.style.display = "none");
-  document.getElementById(id).style.display = "block";
-  document.querySelectorAll("#mainNav button").forEach(btn => {
-    btn.classList.remove("active");
-    if (btn.classList.contains(`nav-${id === 'supplements' ? 'supps' : id}`)) btn.classList.add("active");
-  });
-}
-
-function showToday() {
-  const today = new Date().getDay();
-  const day = trainingData.days.find(d => d.weekday === today);
-  if (!day) alert("Сегодня день отдыха! 🧘‍♂️");
-  else {
-    selectedDayId = day.id;
-    showPage('training');
-    renderAll();
+/* ==========================================
+   ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ
+========================================== */
+function showPage(id){
+  syncDOMToTrainingData();
+  
+  todayOnly = false;
+  document.querySelectorAll(".container").forEach(c=>c.style.display="none");
+  document.getElementById(id).style.display="block";
+  
+  if (id === "training") {
+    renderDaysEditor();
+    renderDaySelector();
+    renderExerciseEditor();
+    renderTrainingPlan();
+    loadWeightsForCurrentWeek();
+    updateAllUI();
+  }
+  if (id === 'stats') {
+    updateStats();
+    initStatsWeekSelector();
+    renderWeekStats(week);
+    showStatsMode('week');
+  }
+  if (id === 'supplements') {
+    renderSupplements();
+  }
+  
+  const supplementSections = [
+    { key: 'breakfast', textId: 'supplementBreakfastText', viewId: 'supplementBreakfastView' },
+    { key: 'lunch', textId: 'supplementLunchText', viewId: 'supplementLunchView' },
+    { key: 'dinner', textId: 'supplementDinnerText', viewId: 'supplementDinnerView' },
+    { key: 'preWorkout', textId: 'supplementPreWorkoutText', viewId: 'supplementPreWorkoutView' },
+    { key: 'postWorkout', textId: 'supplementPostWorkoutText', viewId: 'supplementPostWorkoutView' }
+  ];
+  
+  if (id !== "supplements") {
+    supplementSections.forEach(section => {
+      const textarea = document.getElementById(section.textId);
+      const view = document.getElementById(section.viewId);
+      if (textarea) textarea.style.display = "none";
+      if (view) view.style.display = "block";
+    });
+    if (editSupplementsBtn) editSupplementsBtn.textContent = "✏ Редактировать";
+  }
+  
+  if (id !== "nutrition") {
+    nutritionText.style.display = "none";
+    nutritionView.style.display = "block";
+    editNutritionBtn.textContent = "✏ Редактировать";
   }
 }
 
 /* ==========================================
-   РЕДАКТИРОВАНИЕ ПЛАНА
+   TRAINING DATA — ИНИЦИАЛИЗАЦИЯ
 ========================================== */
-function renderDaysEditor() {
-  const ul = document.getElementById("daysEditor");
+let trainingData = null;
+let todayOnly = false;
+let todayDayId = null;
+let selectedDayId = null;
+function saveTrainingData(){
+  afterDataChange();
+}
+
+/* ===== ДОБАВЛЕНИЕ ДНЯ ТРЕНИРОВКИ ===== */
+let editingDayIndex = null;
+
+document.getElementById("addDayBtn").onclick = () => {
+  const form = document.getElementById("dayEditForm");
+  const isVisible = form.classList.contains("active");
+  
+  if (isVisible) {
+    // Скрываем форму
+    form.classList.remove("active");
+    document.getElementById("dayNameInput").value = "";
+    document.getElementById("dayWeekdaySelect").value = "1";
+    editingDayIndex = null;
+  } else {
+    // Показываем форму
+    editingDayIndex = null;
+    document.getElementById("dayNameInput").value = "";
+    document.getElementById("dayWeekdaySelect").value = "1";
+    form.classList.add("active");
+    setTimeout(() => document.getElementById("dayNameInput").focus(), 100);
+  }
+};
+
+function saveDay() {
+  if (!trainingData || !trainingData.days) {
+    console.error('trainingData не загружен');
+    return;
+  }
+  
+  const title = document.getElementById("dayNameInput").value.trim();
+  if (!title) {
+    alert("Введите название дня");
+    return;
+  }
+
+  const weekday = Number(document.getElementById("dayWeekdaySelect").value);
+  
+  if (editingDayIndex === null) {
+    trainingData.days.push({
+      id: "day_" + Date.now(),
+      title,
+      weekday,
+      exercises: []
+    });
+  } else {
+    trainingData.days[editingDayIndex].title = title;
+    trainingData.days[editingDayIndex].weekday = weekday;
+  }
+
+  afterDataChange();
+  
+  // Очищаем поля для следующего добавления (форму НЕ скрываем!)
+  document.getElementById("dayNameInput").value = "";
+  document.getElementById("dayWeekdaySelect").value = "1";
+  editingDayIndex = null;
+  
+  // Фокус обратно на первое поле для быстрого добавления следующего
+  document.getElementById("dayNameInput").focus();
+
+  renderDaysEditor();  
+  renderDaySelector();
+  renderExerciseEditor();
+  renderTrainingPlan();
+}
+
+document.getElementById("saveDayBtn").onclick = saveDay;
+
+document.getElementById("dayNameInput").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    saveDay();
+  }
+});
+document.getElementById("dayWeekdaySelect").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    saveDay();
+  }
+});
+
+document.getElementById("cancelDayBtn").onclick = () => {
+  document.getElementById("dayEditForm").classList.remove("active");
+  document.getElementById("dayNameInput").value = "";
+  document.getElementById("dayWeekdaySelect").value = "1";
+  editingDayIndex = null;
+};
+
+/* ==========================================
+   РЕДАКТОР УПРАЖНЕНИЙ
+========================================== */
+
+function renderExerciseEditor() {
+  const ul = document.getElementById("exerciseEditorList");
   ul.innerHTML = "";
-  trainingData.days.forEach((day, i) => {
+
+  if (!trainingData || !trainingData.days || !trainingData.days.length) return;
+
+  if (!trainingData.days.find(d => d.id === selectedDayId)) {
+    selectedDayId = trainingData.days[0].id;
+  }
+
+  const day = trainingData.days.find(d => d.id === selectedDayId);
+  if (!day) return;
+
+  day.exercises.forEach((ex, i) => {
     const li = document.createElement("li");
-    li.className = "editable-item";
+    li.className = "exercise-editor-item";
     li.innerHTML = `
-      <strong>${day.title}</strong>
+      <span style="font-weight:500; font-size:0.9em;">${ex.name} — ${ex.sets}×${ex.reps} ${ex.hasWeight ? "⚖" : ""}</span>
       <div>
-        <button class="btn" style="padding:4px 8px;" onclick="moveDay(${i}, -1)">↑</button>
-        <button class="btn" style="padding:4px 8px;" onclick="moveDay(${i}, 1)">↓</button>
-        <button class="btn" style="padding:4px 8px;" onclick="editDay(${i})">✏</button>
-        <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteDay(${i})">🗑</button>
+        <button class="edit-btn" onclick="editTrainingExercise('${selectedDayId}',${i})">✏</button>
+        <button class="del-btn" onclick="deleteTrainingExercise('${selectedDayId}',${i})">🗑</button>
       </div>
     `;
     ul.appendChild(li);
   });
+}
+
+let editingExerciseIndex = null;
+
+document.getElementById("addExerciseBtn").onclick = () => {
+  const form = document.getElementById("exerciseEditForm");
+  const isVisible = form.classList.contains("active");
+  
+  if (isVisible) {
+    // Скрываем форму
+    form.classList.remove("active");
+    document.getElementById("exerciseNameInput").value = "";
+    document.getElementById("exerciseSetsInput").value = "";
+    document.getElementById("exerciseRepsInput").value = "";
+    document.getElementById("exerciseHasWeightInput").checked = false;
+    editingExerciseIndex = null;
+  } else {
+    // Показываем форму
+    editingExerciseIndex = null;
+    document.getElementById("exerciseNameInput").value = "";
+    document.getElementById("exerciseSetsInput").value = "";
+    document.getElementById("exerciseRepsInput").value = "";
+    document.getElementById("exerciseHasWeightInput").checked = false;
+    form.classList.add("active");
+    setTimeout(() => document.getElementById("exerciseNameInput").focus(), 100);
+  }
+};
+
+function saveExercise() {
+  if (!trainingData || !trainingData.days) {
+    return;
+  }
+  
+  const name = document.getElementById("exerciseNameInput").value.trim();
+  if (!name) {
+    alert("Введите название упражнения");
+    return;
+  }
+
+  const sets = document.getElementById("exerciseSetsInput").value.trim();
+  if (!sets) {
+    alert("Введите количество подходов");
+    return;
+  }
+
+  const reps = document.getElementById("exerciseRepsInput").value.trim();
+  if (!reps) {
+    alert("Введите количество повторений");
+    return;
+  }
+
+  const hasWeight = document.getElementById("exerciseHasWeightInput").checked;
+
+  const day = trainingData.days.find(d => d.id === selectedDayId);
+  if (!day) return;
+
+  if (editingExerciseIndex === null) {
+    day.exercises.push({
+      id: Date.now(),
+      name, sets, reps, hasWeight
+    });
+  } else {
+    const ex = day.exercises[editingExerciseIndex];
+    day.exercises[editingExerciseIndex] = { ...ex, name, sets, reps, hasWeight };
+  }
+
+  afterDataChange();
+  
+  // Очищаем поля для следующего добавления (форму НЕ скрываем!)
+  document.getElementById("exerciseNameInput").value = "";
+  document.getElementById("exerciseSetsInput").value = "";
+  document.getElementById("exerciseRepsInput").value = "";
+  document.getElementById("exerciseHasWeightInput").checked = false;
+  editingExerciseIndex = null;
+  
+  // Фокус обратно на первое поле для быстрого добавления следующего
+  document.getElementById("exerciseNameInput").focus();
+
+  renderExerciseEditor();
+  renderTrainingPlan();
+  
+  if (todayOnly && selectedDayId) {
+    renderDaySelector();
+  }
+}
+
+document.getElementById("saveExerciseBtn").onclick = saveExercise;
+
+document.getElementById("exerciseNameInput").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    document.getElementById("exerciseSetsInput").focus();
+  }
+});
+document.getElementById("exerciseSetsInput").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    document.getElementById("exerciseRepsInput").focus();
+  }
+});
+document.getElementById("exerciseRepsInput").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    saveExercise();
+  }
+});
+
+document.getElementById("cancelExerciseBtn").onclick = () => {
+  document.getElementById("exerciseEditForm").classList.remove("active");
+  document.getElementById("exerciseNameInput").value = "";
+  document.getElementById("exerciseSetsInput").value = "";
+  document.getElementById("exerciseRepsInput").value = "";
+  document.getElementById("exerciseHasWeightInput").checked = false;
+  editingExerciseIndex = null;
+};
+
+function editTrainingExercise(dayId, i){
+  if (!trainingData || !trainingData.days) return;
+  
+  const day = trainingData.days.find(d => d.id === dayId);
+  if (!day) return;
+  
+  const ex = day.exercises[i];
+  if (!ex) return;
+
+  editingExerciseIndex = i;
+  selectedDayId = dayId;
+  
+  document.getElementById("exerciseNameInput").value = ex.name || "";
+  document.getElementById("exerciseSetsInput").value = ex.sets || "";
+  document.getElementById("exerciseRepsInput").value = ex.reps || "";
+  document.getElementById("exerciseHasWeightInput").checked = ex.hasWeight || false;
+  
+  document.getElementById("exerciseNameInput").focus();
+  
+  renderDaySelector();
+}
+
+function deleteTrainingExercise(day, i){
+  if (!trainingData || !trainingData.days) return;
+  if(!confirm("Удалить?")) return;
+  
+  const d = trainingData.days.find(x => x.id === day);
+  if (!d) return;
+  
+  d.exercises.splice(i,1);
+  
+  afterDataChange();
+  
+  renderExerciseEditor();
+  renderTrainingPlan();
+}
+
+/* ==========================================
+   ОТРИСОВКА ДИНАМИЧНЫХ ТРЕНИРОВОК
+========================================== */
+function renderTrainingPlan(){
+  if (!trainingData || !trainingData.days) return;
+  
+  const editor = document.getElementById("trainingEditor");
+  if (editor) {
+    editor.style.display = todayOnly ? "none" : "block";
+  }
+
+  const container = document.getElementById("dynamicTrainingDays");
+  container.innerHTML = "";
+
+  const daysToRender = todayOnly
+  ? trainingData.days.filter(d => d.id === todayDayId)
+  : trainingData.days;
+
+daysToRender.forEach(day => {
+    const block = document.createElement("div");
+    block.className = "day";
+    block.innerHTML = `<h3>${day.title}</h3>`;
+
+    day.exercises.forEach(ex=>{
+      const row = document.createElement("div");
+      row.className = "exercise-row";
+
+const left = `
+  <label>
+    <input type="checkbox" class="task" data-id="${ex.id}">
+    ${ex.name} — ${ex.sets}×${ex.reps}
+  </label>
+`;
+
+let right = ``;
+
+if (ex.hasWeight) {
+  right += `
+    <input type="number" class="weight-input" data-id="${ex.id}" step="0.5" placeholder="кг">
+    <span class="last-weight" data-id="${ex.id}"></span>
+  `;
+} else {
+  // Пустые ячейки для выравнивания (чтобы RPE был на одном месте)
+  right += `
+    <span></span>
+    <span></span>
+  `;
+}
+
+right += `
+  <select class="rpe-select" data-id="${ex.id}">
+    <option value="">RPE</option>
+    ${[...Array(10)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
+  </select>
+
+  <button class="comment-btn" data-id="${ex.id}">
+  💬<span class="comment-star">★</span>
+</button>
+`;
+
+row.innerHTML = `
+  <div class="exercise-left">${left}</div>
+  <div class="exercise-right">${right}</div>
+`;
+      block.appendChild(row);
+    });
+
+    container.appendChild(block);
+  });
+
+  initDynamicCheckboxes();
+  loadWeightsForCurrentWeek();
+  initWeightInputs();
+  initRPE();
+  initComments();
+}
+
+/* ==========================================
+   ЧЕКБОКСЫ
+========================================== */
+function initDynamicCheckboxes(){
+  document.querySelectorAll(".task").forEach(t=>{
+    const id = t.dataset.id;
+    const key = "task_"+id;
+    const saved = appData.tasks[key];
+    if(saved === true) t.checked = true;
+
+    t.onchange = ()=>{
+      appData.tasks[key] = t.checked;
+      afterDataChange();
+    };
+  });
+}
+
+/* ==========================================
+   ВЕСА
+========================================== */
+let week = null;
+
+function saveCurrentWeights() {
+  syncDOMToTrainingData();
+}
+
+function loadWeightsForCurrentWeek() {
+  if (!week) return;
+  
+  document.querySelectorAll('.weight-input').forEach(input => {
+    const id = input.dataset.id;
+    const key = `weight_w${week}_${id}`;
+    const saved = appData.weights[key];
+    input.value = saved || '';
+
+    const span = document.querySelector(`.last-weight[data-id="${id}"]`);
+    if (span) {
+      const last = appData.weights[`weight_w${week-1}_${id}`] || appData.weights[key];
+      span.textContent = last ? last + " кг" : "";
+      span.classList.toggle("has-value", !!last);
+    }
+  });
+}
+
+function initWeightInputs() {
+  document.querySelectorAll('.weight-input').forEach(input => {
+    let timeout;
+    input.addEventListener('input', () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        syncDOMToTrainingData();
+        appData.trainingData = trainingData;
+        appData.week = week;
+        appData.weekStats = weekStats;
+        saveToServer();
+        updateAllUI();
+      }, 300);
+    });
+
+    input.addEventListener('blur', () => {
+      syncDOMToTrainingData();
+      appData.trainingData = trainingData;
+      appData.week = week;
+      appData.weekStats = weekStats;
+      saveToServer();
+      updateAllUI();
+    });
+
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        syncDOMToTrainingData();
+        appData.trainingData = trainingData;
+        appData.week = week;
+        appData.weekStats = weekStats;
+        saveToServer();
+        updateAllUI();
+        input.blur();
+      }
+    });
+  });
+}
+
+/* ==========================================
+   ПРОГРЕСС
+========================================== */
+function updateProgress(){
+  if (!trainingData) return;
+  
+  const tasks = document.querySelectorAll(".task");
+  const done = [...tasks].filter(t=>t.checked).length;
+  const percent = tasks.length ? Math.round(done/tasks.length*100) : 0;
+  const progressBar = document.getElementById('progressBar');
+  if (progressBar) {
+    progressBar.style.width = percent + '%';
+  }
+  appData.progress = percent;
+}
+
+/* ==========================================
+   НЕДЕЛИ
+========================================== */
+function nextWeek(){
+  if (!trainingData || !week || !weekStats) {
+    console.error('Данные не загружены');
+    return;
+  }
+  
+  if (week >= 12) {
+    alert('Достигнут максимум недель (12)');
+    return;
+  }
+  
+  syncDOMToTrainingData();
+  
+  updateStats();
+
+  appData.tasks = {};
+  
+  week++;
+  appData.week = week;
+  
+  appData.progress = 0;
+  
+  appData.trainingData = trainingData;
+  appData.weekStats = weekStats;
+  
+  renderTrainingPlan();
+  
+  updateProgress();
+  
+  saveToServerImmediately();
+}
+
+/* ==========================================
+   СТАТИСТИКА
+========================================== */
+let weekStats = null;
+
+function updateStats(){
+  if (!trainingData || !weekStats || !week) return;
+  
+  const tasks = document.querySelectorAll(".task");
+  const done = [...tasks].filter(t => t.checked).length;
+  const percent = tasks.length ? Math.round(done / tasks.length * 100) : 0;
+
+  weekStats[week - 1] = percent;
+  appData.weekStats = weekStats;
+}
+
+/* ==========================================
+   СУППЛЕМЕНТЫ
+========================================== */
+const supplementSections = [
+  { key: 'breakfast', textId: 'supplementBreakfastText', viewId: 'supplementBreakfastView', default: '' },
+  { key: 'lunch', textId: 'supplementLunchText', viewId: 'supplementLunchView', default: '' },
+  { key: 'dinner', textId: 'supplementDinnerText', viewId: 'supplementDinnerView', default: '' },
+  { key: 'preWorkout', textId: 'supplementPreWorkoutText', viewId: 'supplementPreWorkoutView', default: '' },
+  { key: 'postWorkout', textId: 'supplementPostWorkoutText', viewId: 'supplementPostWorkoutView', default: '' }
+];
+
+function loadSupplements() {
+  supplementSections.forEach(section => {
+    const saved = appData.supplements[section.key] || section.default;
+    const textarea = document.getElementById(section.textId);
+    const view = document.getElementById(section.viewId);
+    
+    if (textarea) textarea.value = saved;
+    if (view) view.textContent = saved;
+  });
+}
+
+function saveSupplements() {
+  supplementSections.forEach(section => {
+    const textarea = document.getElementById(section.textId);
+    if (textarea) {
+      appData.supplements[section.key] = textarea.value;
+    }
+  });
+  saveToServer();
+}
+
+function renderSupplements() {
+  supplementSections.forEach(section => {
+    const saved = appData.supplements[section.key] || section.default;
+    const view = document.getElementById(section.viewId);
+    if (view) view.textContent = saved;
+  });
+}
+
+const editSupplementsBtn = document.getElementById("editSupplementsBtn");
+
+editSupplementsBtn.onclick = () => {
+  const isEditing = document.getElementById("supplementBreakfastText").style.display === "block";
+
+  if (isEditing) {
+    saveSupplements();
+    renderSupplements();
+    
+    supplementSections.forEach(section => {
+      const textarea = document.getElementById(section.textId);
+      const view = document.getElementById(section.viewId);
+      if (textarea) textarea.style.display = "none";
+      if (view) view.style.display = "block";
+    });
+    
+    editSupplementsBtn.textContent = "✏ Редактировать";
+  } else {
+    supplementSections.forEach(section => {
+      const textarea = document.getElementById(section.textId);
+      const view = document.getElementById(section.viewId);
+      if (textarea) textarea.style.display = "block";
+      if (view) view.style.display = "none";
+    });
+    
+    editSupplementsBtn.textContent = "💾 Сохранить";
+  }
+};
+
+/* ==========================================
+   ПИТАНИЕ
+========================================== */
+const nutritionText = document.getElementById("nutritionText");
+const nutritionView = document.getElementById("nutritionView");
+const editNutritionBtn = document.getElementById("editNutritionBtn");
+
+const defaultNutrition = `Белок: 1.6–2 г/кг
+Жиры: 0.8–1 г/кг
+Углеводы: добор калорий
++300–400 ккал к норме`;
+
+let nutritionData = defaultNutrition;
+
+editNutritionBtn.onclick = () => {
+  const isEditing = nutritionText.style.display === "block";
+
+  if (isEditing) {
+    nutritionData = nutritionText.value.trim();
+    appData.nutritionText = nutritionData;
+    saveToServer();
+    nutritionView.textContent = nutritionData;
+
+    nutritionText.style.display = "none";
+    nutritionView.style.display = "block";
+    editNutritionBtn.textContent = "✏ Редактировать";
+  } else {
+    nutritionText.style.display = "block";
+    nutritionView.style.display = "none";
+    editNutritionBtn.textContent = "💾 Сохранить";
+  }
+};
+
+function initRPE() {
+  if (!week) return;
+  
+  document.querySelectorAll('.rpe-select').forEach(select => {
+    const id = select.dataset.id;
+    const key = `rpe_w${week}_${id}`;
+
+    const saved = appData.rpe[key];
+    if (saved) select.value = saved;
+
+    select.onchange = () => {
+      syncDOMToTrainingData();
+      appData.trainingData = trainingData;
+      appData.week = week;
+      appData.weekStats = weekStats;
+      saveToServer();
+      updateAllUI();
+    };
+  });
+}
+
+function initComments() {
+  if (!week) return;
+  
+  document.querySelectorAll('.comment-btn').forEach(btn => {
+    const id = btn.dataset.id;
+    const key = `comment_w${week}_${id}`;
+
+    btn.onclick = () => {
+      const prev = appData.comments[key] || "";
+      const text = prompt("Комментарий к упражнению:", prev);
+      if (text === null) return;
+
+      if (text.trim()) {
+        appData.comments[key] = text.trim();
+        btn.querySelector(".comment-star").style.visibility = "visible";
+      } else {
+        delete appData.comments[key];
+        btn.querySelector(".comment-star").style.visibility = "hidden";
+      }
+      saveToServer();
+    };
+
+    if (appData.comments[key]) {
+      btn.querySelector(".comment-star").style.visibility = "visible";
+    }
+  });
+}
+
+function showToday() {
+  if (!trainingData || !trainingData.days) {
+    console.error('trainingData не загружен');
+    return;
+  }
+  
+  syncDOMToTrainingData();
+  
+  const today = new Date().getDay();
+  const day = trainingData.days.find(d => d.weekday === today);
+
+  if (!day) {
+    alert("Сегодня день отдыха 💆‍♂️");
+    todayOnly = false;
+    showPage("training");
+    return;
+  }
+
+  todayOnly = true;
+  todayDayId = day.id;
+  selectedDayId = day.id;
+
+  document.querySelectorAll(".container").forEach(c => c.style.display = "none");
+  document.getElementById("training").style.display = "block";
+  
+  renderDaysEditor();
+  renderDaySelector();
+  renderExerciseEditor();
+  renderTrainingPlan();
+  loadWeightsForCurrentWeek();
+  updateAllUI();
+}
+
+function initStatsWeekSelector() {
+  const select = document.getElementById("statsWeekSelect");
+  select.innerHTML = "";
+
+  for (let w = 1; w <= 12; w++) {
+    const opt = document.createElement("option");
+    opt.value = w;
+    opt.textContent = "Неделя " + w;
+    if (w === week) opt.selected = true;
+    select.appendChild(opt);
+  }
+
+  select.onchange = () => {
+    renderWeekStats(+select.value);
+  };
+}
+
+function renderWeekStats(selectedWeek) {
+
+  const summary = document.getElementById("weekSummary");
+  const percent = weekStats[selectedWeek - 1] || 0;
+
+  summary.innerHTML = `
+    <div style="
+      background: var(--day-bg);
+      padding: 14px;
+      border-radius: 10px;
+      margin: 16px 0;
+    ">
+      <strong>Неделя ${selectedWeek}</strong><br>
+      Выполнение: <b>${percent}%</b>
+    </div>
+  `;
+
+  renderWeekDiary(selectedWeek);
+}
+
+function renderWeekDiary(selectedWeek) {
+  const box = document.getElementById("rpeStats");
+  box.innerHTML = "";
+
+  trainingData.days.forEach(day => {
+    let exercisesHTML = "";
+    let hasData = false;
+
+    const avgRPE = getAverageRPEForExercises(day.exercises, selectedWeek);
+
+    day.exercises.forEach(ex => {
+      const weight = appData.weights[`weight_w${selectedWeek}_${ex.id}`];
+      const rpe = appData.rpe[`rpe_w${selectedWeek}_${ex.id}`];
+      const comment = appData.comments[`comment_w${selectedWeek}_${ex.id}`];
+
+      if (!weight && !rpe && !comment) return;
+
+      hasData = true;
+
+      exercisesHTML += `
+        <div style="background:var(--card);padding:10px;border-radius:8px;margin-top:8px;">
+          <strong>${ex.name}</strong><br>
+          ${weight ? `Вес: <b>${weight} кг</b><br>` : ""}
+          ${rpe ? `RPE: <b class="${getRPEClass(rpe)}">${rpe}</b><br>` : ""}
+          ${comment ? `💬 ${comment}` : ""}
+        </div>
+      `;
+    });
+
+    box.innerHTML += `
+      <div style="background:var(--day-bg);padding:12px;border-radius:10px;margin-bottom:14px;">
+        <strong>${day.title}</strong>
+        ${avgRPE ? `<span class="${getRPEClass(avgRPE)}"> · ср. RPE: <b>${avgRPE}</b></span>` : ""}
+        ${hasData ? exercisesHTML : `<div style="opacity:.6;margin-top:6px;">Нет данных</div>`}
+      </div>
+    `;
+  });
+}
+function getAverageRPEForExercises(exercises, week) {
+  let sum = 0;
+  let count = 0;
+
+  exercises.forEach(ex => {
+    const rpe = appData.rpe[`rpe_w${week}_${ex.id}`];
+    if (rpe) {
+      sum += Number(rpe);
+      count++;
+    }
+  });
+
+  return count ? (sum / count).toFixed(1) : null;
+}
+function getRPEClass(rpe) {
+  const val = Number(rpe);
+  if (val <= 7) return "rpe-low";
+  if (val <= 8) return "rpe-mid";
+  return "rpe-high";
+}
+function resetAllStats() {
+  if (!confirm("Сбросить ВСЮ статистику, веса, RPE, комментарии и пройденные упражнения?")) return;
+
+  weekStats = new Array(12).fill(0);
+  appData.weekStats = weekStats;
+  
+  week = 1;
+  appData.week = 1;
+  
+  appData.weights = {};
+  appData.rpe = {};
+  appData.comments = {};
+  appData.tasks = {};
+  appData.progress = 0;
+  
+  appData.trainingData = trainingData;
+  
+  renderTrainingPlan();
+  
+  updateProgress();
+  updateStats();
+  
+  initStatsWeekSelector();
+  
+  renderWeekStats(1);
+  
+  const totalStats = document.getElementById("totalStats");
+  if (totalStats && totalStats.style.display !== "none") {
+    renderTotalStats();
+  }
+  
+  saveToServerImmediately();
+}
+function showStatsMode(mode) {
+  const weekSelect = document.getElementById("statsWeekSelect");
+  const weekSummary = document.getElementById("weekSummary");
+  const totalStats = document.getElementById("totalStats");
+
+  document.getElementById("weekStatsBtn").style.opacity = mode === "week" ? "1" : ".5";
+  document.getElementById("totalStatsBtn").style.opacity = mode === "total" ? "1" : ".5";
+document.querySelector("#stats h3").style.display =
+  mode === "week" ? "block" : "none";
+  if (mode === "week") {
+    weekSelect.style.display = "inline-block";
+    weekSummary.style.display = "block";
+    document.getElementById("rpeStats").style.display = "block";
+    totalStats.style.display = "none";
+
+    renderWeekStats(+weekSelect.value);
+  } else {
+    weekSelect.style.display = "none";
+    weekSummary.style.display = "none";
+    document.getElementById("rpeStats").style.display = "none";
+    totalStats.style.display = "block";
+
+    renderTotalStats();
+  }
+}
+function renderTotalStats() {
+  const box = document.getElementById("totalStats");
+  box.innerHTML = "";
+
+  const completedWeeks = weekStats.filter(v => v > 0);
+  const avgCompletion = completedWeeks.length
+    ? Math.round(completedWeeks.reduce((a,b)=>a+b,0) / completedWeeks.length)
+    : 0;
+
+  let totalRPE = 0;
+  let rpeCount = 0;
+  let rpeByWeek = [];
+
+  let totalExercises = 0;
+  let exercisesWithWeight = 0;
+  let weightProgress = [];
+
+  trainingData.days.forEach(day => {
+    day.exercises.forEach(ex => {
+      let weekRPE = [];
+      let hasAnyData = false;
+
+      for (let w = 1; w <= 12; w++) {
+        const rpe = appData.rpe[`rpe_w${w}_${ex.id}`];
+        const weight = appData.weights[`weight_w${w}_${ex.id}`];
+
+        if (rpe) {
+          totalRPE += Number(rpe);
+          rpeCount++;
+          weekRPE.push(Number(rpe));
+        }
+
+        if (weight) {
+          exercisesWithWeight++;
+          hasAnyData = true;
+          if (ex.hasWeight) {
+            const weightNum = parseFloat(weight);
+            if (!weightProgress[ex.id]) weightProgress[ex.id] = [];
+            weightProgress[ex.id].push({ week: w, weight: weightNum });
+          }
+        }
+      }
+
+      if (hasAnyData) {
+        totalExercises++;
+      }
+
+      if (weekRPE.length > 0) {
+        rpeByWeek.push(weekRPE);
+      }
+    });
+  });
+
+  const avgRPE = rpeCount ? (totalRPE / rpeCount).toFixed(1) : "—";
+
+  let progressChart = "";
+  const maxPercent = Math.max(...weekStats, 1);
+  weekStats.forEach((percent, index) => {
+    const height = maxPercent > 0 ? (percent / maxPercent * 100) : 0;
+    const color = percent >= 80 ? "#2ecc71" : percent >= 50 ? "#f1c40f" : "#e74c3c";
+    progressChart += `
+      <div class="progress-chart-bar">
+        <div style="width:30px;height:80px;background:rgba(128,128,128,0.15);border-radius:4px;position:relative;overflow:hidden;">
+          <div style="position:absolute;bottom:0;width:100%;height:${height}%;background:${color};border-radius:4px;transition:0.3s;"></div>
+        </div>
+        <span style="font-size:0.75em;font-weight:600;">${index + 1}</span>
+      </div>
+    `;
+  });
+
+  let trend = "";
+  if (completedWeeks.length >= 2) {
+    const recent = weekStats.slice(-3).filter(v => v > 0);
+    const earlier = weekStats.slice(-6, -3).filter(v => v > 0);
+    if (recent.length && earlier.length) {
+      const recentAvg = recent.reduce((a,b)=>a+b,0) / recent.length;
+      const earlierAvg = earlier.reduce((a,b)=>a+b,0) / earlier.length;
+      if (recentAvg > earlierAvg + 5) trend = "📈 Улучшение";
+      else if (recentAvg < earlierAvg - 5) trend = "📉 Снижение";
+      else trend = "➡️ Стабильно";
+    }
+  }
+
+  box.innerHTML = `
+    <div style="
+      background: var(--day-bg);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    ">
+      <h3>📊 Общая статистика</h3>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:12px 0;">
+        <div>
+          <div style="font-size:0.9em;color:#888;margin-bottom:4px;">Завершённых недель</div>
+          <div style="font-size:1.5em;font-weight:bold;">${completedWeeks.length} / 12</div>
+        </div>
+        <div>
+          <div style="font-size:0.9em;color:#888;margin-bottom:4px;">Среднее выполнение</div>
+          <div style="font-size:1.5em;font-weight:bold;">${avgCompletion}%</div>
+        </div>
+        <div>
+          <div style="font-size:0.9em;color:#888;margin-bottom:4px;">Средний RPE</div>
+          <div style="font-size:1.5em;font-weight:bold;">${avgRPE}</div>
+        </div>
+        <div>
+          <div style="font-size:0.9em;color:#888;margin-bottom:4px;">Выполнено упражнений</div>
+          <div style="font-size:1.5em;font-weight:bold;">${totalExercises}</div>
+        </div>
+      </div>
+      ${trend ? `<div style="margin:12px 0;padding:8px;background:var(--card);border-radius:6px;text-align:center;"><b>${trend}</b></div>` : ""}
+    </div>
+
+    <div style="
+      background: var(--day-bg);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    ">
+      <h3>📈 Прогресс по неделям</h3>
+      <div class="progress-chart-container">
+        ${progressChart || "<div style='opacity:0.6;'>Нет данных</div>"}
+      </div>
+    </div>
+  `;
 }
 
 function renderDaySelector() {
   const box = document.getElementById("daySelector");
   box.innerHTML = "";
+
+  if (!trainingData || !trainingData.days) return;
+
   trainingData.days.forEach(day => {
     const btn = document.createElement("button");
-    btn.className = day.id === selectedDayId ? "btn btn-primary" : "btn btn-secondary";
+    btn.className = "day-btn";
     btn.textContent = day.title;
-    btn.onclick = () => { selectedDayId = day.id; renderAll(); };
+    btn.classList.toggle("active", day.id === selectedDayId);
+
+    btn.addEventListener('click', () => {
+      syncDOMToTrainingData();
+      
+      todayOnly = false;
+      selectedDayId = day.id;
+      renderDaySelector();
+      renderExerciseEditor();
+      renderTrainingPlan();
+    });
+
     box.appendChild(btn);
   });
 }
-
-function renderExerciseEditor() {
-  const ul = document.getElementById("exerciseEditorList");
+function renderDaysEditor() {
+  const ul = document.getElementById("daysEditor");
   ul.innerHTML = "";
-  const day = trainingData.days.find(d => d.id === selectedDayId);
-  if (!day) return;
-  day.exercises.forEach((ex, i) => {
+
+  if (!trainingData || !trainingData.days) return;
+
+  trainingData.days.forEach((day, i) => {
     const li = document.createElement("li");
     li.className = "editable-item";
     li.innerHTML = `
-      <div><b>${ex.name}</b> <small>${ex.sets}×${ex.reps}</small></div>
+      <span style="font-weight:500; font-size:0.95em;">${day.title}</span>
       <div>
-        <button class="btn" style="padding:4px 8px;" onclick="editEx(${i})">✏</button>
-        <button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteEx(${i})">🗑</button>
+        <button onclick="moveDay(${i}, -1)" title="Вверх">↑</button>
+        <button onclick="moveDay(${i}, 1)" title="Вниз">↓</button>
+        <button class="edit-btn" onclick="editDay(${i})" title="Редактировать">✏</button>
+        <button class="del-btn" onclick="deleteDay(${i})" title="Удалить">🗑</button>
       </div>
     `;
+
     ul.appendChild(li);
   });
 }
+function moveDay(index, dir) {
+  const newIndex = index + dir;
+  if (newIndex < 0 || newIndex >= trainingData.days.length) return;
 
-let editingDayIdx = null;
-function editDay(idx) {
-  editingDayIdx = idx;
-  const day = trainingData.days[idx];
-  document.getElementById("dayNameInput").value = day.title;
-  document.getElementById("dayWeekdaySelect").value = day.weekday;
-  document.getElementById("dayEditForm").classList.add("active");
+  const tmp = trainingData.days[index];
+  trainingData.days[index] = trainingData.days[newIndex];
+  trainingData.days[newIndex] = tmp;
+
+  saveTrainingData();
+  renderDaysEditor();
+  renderDaySelector();
+  renderTrainingPlan();
 }
 
-let editingExIdx = null;
-function editEx(idx) {
-  editingExIdx = idx;
-  const day = trainingData.days.find(d => d.id === selectedDayId);
-  const ex = day.exercises[idx];
-  document.getElementById("exerciseNameInput").value = ex.name;
-  document.getElementById("exerciseSetsInput").value = ex.sets;
-  document.getElementById("exerciseRepsInput").value = ex.reps;
-  document.getElementById("exerciseHasWeightInput").checked = ex.hasWeight;
-  document.getElementById("exerciseEditForm").classList.add("active");
+function editDay(index) {
+  if (!trainingData || !trainingData.days) return;
+  
+  const day = trainingData.days[index];
+  if (!day) return;
+
+  editingDayIndex = index;
+  document.getElementById("dayNameInput").value = day.title || "";
+  document.getElementById("dayWeekdaySelect").value = day.weekday || "1";
+  document.getElementById("dayNameInput").focus();
 }
 
-document.getElementById("addDayBtn").onclick = () => { 
-  editingDayIdx = null; 
-  document.getElementById("dayNameInput").value = "";
-  document.getElementById("dayWeekdaySelect").value = "1";
-  document.getElementById("dayEditForm").classList.toggle("active"); 
-};
+function deleteDay(index) {
+  if (!trainingData || !trainingData.days) return;
+  if (!confirm("Удалить день и все упражнения?")) return;
 
-document.getElementById("addExerciseBtn").onclick = () => { 
-  editingExIdx = null;
-  document.getElementById("exerciseNameInput").value = "";
-  document.getElementById("exerciseSetsInput").value = "";
-  document.getElementById("exerciseRepsInput").value = "";
-  document.getElementById("exerciseHasWeightInput").checked = false;
-  document.getElementById("exerciseEditForm").classList.toggle("active"); 
-};
+  trainingData.days.splice(index, 1);
+  selectedDayId = trainingData.days[0]?.id || null;
 
-document.getElementById("cancelDayBtn").onclick = () => {
-  document.getElementById("dayEditForm").classList.remove("active");
-};
-
-document.getElementById("cancelExerciseBtn").onclick = () => {
-  document.getElementById("exerciseEditForm").classList.remove("active");
-};
-
-document.getElementById("saveDayBtn").onclick = () => {
-  const title = document.getElementById("dayNameInput").value;
-  const weekday = parseInt(document.getElementById("dayWeekdaySelect").value);
-  if (!title) return;
-  if (editingDayIdx === null) trainingData.days.push({ id: "d" + Date.now(), title, weekday, exercises: [] });
-  else { trainingData.days[editingDayIdx].title = title; trainingData.days[editingDayIdx].weekday = weekday; }
-  document.getElementById("dayEditForm").classList.remove("active");
-  renderAll(); saveToServer();
-};
-
-document.getElementById("saveExerciseBtn").onclick = () => {
-  const name = document.getElementById("exerciseNameInput").value;
-  const sets = document.getElementById("exerciseSetsInput").value;
-  const reps = document.getElementById("exerciseRepsInput").value;
-  const hasWeight = document.getElementById("exerciseHasWeightInput").checked;
-  if (!name || !sets) return;
-  const day = trainingData.days.find(d => d.id === selectedDayId);
-  if (editingExIdx === null) day.exercises.push({ id: "ex" + Date.now(), name, sets, reps, hasWeight });
-  else { 
-    const id = day.exercises[editingExIdx].id;
-    day.exercises[editingExIdx] = { id, name, sets, reps, hasWeight }; 
-  }
-  document.getElementById("exerciseEditForm").classList.remove("active");
-  renderAll(); saveToServer();
-};
-
-function moveDay(idx, dir) {
-  const newIdx = idx + dir;
-  if (newIdx < 0 || newIdx >= trainingData.days.length) return;
-  [trainingData.days[idx], trainingData.days[newIdx]] = [trainingData.days[newIdx], trainingData.days[idx]];
-  renderAll();
-  saveToServer();
-}
-
-function deleteDay(idx) { if (confirm("Удалить день?")) { trainingData.days.splice(idx, 1); renderAll(); saveToServer(); } }
-function deleteEx(idx) { 
-  if (confirm("Удалить упражнение?")) { 
-    const day = trainingData.days.find(d => d.id === selectedDayId);
-    day.exercises.splice(idx, 1); 
-    renderAll(); saveToServer(); 
-  } 
+  afterDataChange();
+  
+  renderDaysEditor();
+  renderDaySelector();
+  renderTrainingPlan();
 }
 
 /* ==========================================
-   ПИТАНИЕ И ДОБАВКИ
+   ИНИЦИАЛИЗАЦИЯ
 ========================================== */
-document.getElementById("editNutritionBtn").onclick = () => {
-  const txt = document.getElementById("nutritionText");
-  const view = document.getElementById("nutritionView");
-  const btn = document.getElementById("editNutritionBtn");
-  if (txt.style.display === "none") {
-    txt.style.display = "block"; view.style.display = "none"; btn.textContent = "💾 Сохранить";
-  } else {
-    appData.nutritionText = txt.value;
-    txt.style.display = "none"; view.style.display = "block"; view.textContent = txt.value;
-    btn.textContent = "✏ Редактировать"; saveToServer();
-  }
-};
-
-function renderSupplements() {
-  const container = document.getElementById("suppsList");
-  container.innerHTML = "";
-  const names = { breakfast: "🌅 Завтрак", lunch: "🍽 Обед", dinner: "🍴 Ужин", preWorkout: "💪 Предтреник", postWorkout: "🏋️ После" };
-  for (let key in names) {
-    const div = document.createElement("div");
-    div.className = "stat-card";
-    div.style.textAlign = "left";
-    div.innerHTML = `
-      <div style="font-weight:800; margin-bottom:12px; font-size:1.1rem;">${names[key]}</div>
-      <div id="supp_view_${key}" style="font-size:1rem; opacity:0.85; white-space:pre-wrap; line-height:1.6;">${appData.supplements[key] || "—"}</div>
-      <textarea id="supp_edit_${key}" style="display:none; margin-top:12px; height:90px; width:100%; padding:12px; border-radius:12px; border:2px solid var(--border); background:var(--bg); color:var(--fg); font-size:1rem; resize:vertical; font-family:inherit; transition: all 0.2s ease;" onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 0 3px rgba(0, 122, 255, 0.1)';" onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='none';">${appData.supplements[key] || ""}</textarea>
-    `;
-    container.appendChild(div);
-  }
-}
-
-document.getElementById("editSupplementsBtn").onclick = () => {
-  const btn = document.getElementById("editSupplementsBtn");
-  const isEditing = btn.textContent.includes("Сохранить");
-  for (let key in appData.supplements) {
-    const view = document.getElementById(`supp_view_${key}`);
-    const edit = document.getElementById(`supp_edit_${key}`);
-    if (isEditing) {
-      appData.supplements[key] = edit.value;
-      view.textContent = edit.value || "—";
-      view.style.display = "block"; edit.style.display = "none";
-    } else {
-      view.style.display = "none"; edit.style.display = "block";
-    }
-  }
-  btn.textContent = isEditing ? "✏ Редактировать" : "💾 Сохранить";
-  if (isEditing) saveToServer();
-};
-
-/* ==========================================
-   СТАТИСТИКА
-========================================== */
-function showStatsMode(mode) {
-  const isWeek = mode === 'week';
-  document.getElementById("weekStatsContainer").style.display = isWeek ? 'block' : 'none';
-  document.getElementById("totalStats").style.display = isWeek ? 'none' : 'block';
-  document.getElementById("weekStatsBtn").className = isWeek ? "btn btn-primary" : "btn btn-secondary";
-  document.getElementById("totalStatsBtn").className = isWeek ? "btn btn-secondary" : "btn btn-primary";
-  if (isWeek) {
-    const select = document.getElementById("statsWeekSelect");
-    select.innerHTML = Array.from({length:12}, (_,i) => `<option value="${i+1}" ${week == i+1 ? 'selected' : ''}>Неделя ${i+1}</option>`).join("");
-    select.onchange = (e) => renderWeekStats(e.target.value);
-    renderWeekStats(week);
-  } else renderTotalStats();
-}
-
-function renderWeekStats(w) {
-  const percent = weekStats[w-1] || 0;
-  document.getElementById("weekSummary").innerHTML = `
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-value">${w}</div><div class="stat-label">Неделя</div></div>
-      <div class="stat-card"><div class="stat-value">${percent}%</div><div class="stat-label">Прогресс</div></div>
-    </div>
-  `;
-}
-
-function renderTotalStats() {
-  const doneWeeks = weekStats.filter(v => v > 0).length;
-  const avgProgress = weekStats.reduce((a,b)=>a+b,0) / 12;
-  document.getElementById("totalStats").innerHTML = `
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-value">${doneWeeks}</div><div class="stat-label">Недель</div></div>
-      <div class="stat-card"><div class="stat-value">${Math.round(avgProgress)}%</div><div class="stat-label">Средний %</div></div>
-    </div>
-  `;
-}
-
-function resetAllStats() {
-  if (confirm("Удалить ВООБЩЕ ВСЁ? Это действие нельзя отменить.")) {
-    appData = getDefaultData();
-    saveToServer();
-    window.location.reload();
-  }
-}
-
-function updateNextWeekButton() {}
-
 checkAuth();
