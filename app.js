@@ -68,7 +68,7 @@ async function loadFromServer() {
   try {
     // Загружаем данные из Supabase
     const { data, error } = await supabaseClient
-      .from('users_data')
+      .from('user_data')
       .select('data')
       .eq('email', userEmail)
       .single();
@@ -115,7 +115,7 @@ async function saveToServer() {
     try {
       // Пробуем обновить существующую запись
       const { data: existingData, error: selectError } = await supabaseClient
-        .from('users_data')
+        .from('user_data')
         .select('id')
         .eq('email', userEmail)
         .single();
@@ -125,7 +125,7 @@ async function saveToServer() {
       if (existingData) {
         // Обновляем существующую запись
         result = await supabaseClient
-          .from('users_data')
+          .from('user_data')
           .update({ 
             data: appData,
             updated_at: new Date().toISOString()
@@ -134,7 +134,7 @@ async function saveToServer() {
       } else {
         // Создаем новую запись
         result = await supabaseClient
-          .from('users_data')
+          .from('user_data')
           .insert([{ 
             email: userEmail, 
             data: appData 
@@ -163,7 +163,7 @@ async function saveToServerImmediately() {
     
     // Пробуем обновить существующую запись
     const { data: existingData, error: selectError } = await supabaseClient
-      .from('users_data')
+      .from('user_data')
       .select('id')
       .eq('email', userEmail)
       .single();
@@ -173,7 +173,7 @@ async function saveToServerImmediately() {
     if (existingData) {
       // Обновляем существующую запись
       result = await supabaseClient
-        .from('users_data')
+        .from('user_data')
         .update({ 
           data: appData,
           updated_at: new Date().toISOString()
@@ -182,7 +182,7 @@ async function saveToServerImmediately() {
     } else {
       // Создаем новую запись
       result = await supabaseClient
-        .from('users_data')
+        .from('user_data')
         .insert([{ 
           email: userEmail, 
           data: appData 
