@@ -216,10 +216,13 @@
 <!-- AUTH SCREEN -->
 <div id="authScreen">
   <h1>🏋️ План Роста и Тренировок</h1>
-  <p>Войдите с помощью email для сохранения данных</p>
+  <p style="font-size: 1.1em; margin: 20px 0; line-height: 1.6;">
+    Персональный план тренировок на 12 недель с отслеживанием прогресса
+  </p>
   <button id="loginBtn">Войти</button>
-  <p style="margin-top: 20px; font-size: 0.9em; color: #888;">
-    Введите ваш email для синхронизации данных с Google Sheets
+  <p style="margin-top: 25px; font-size: 0.95em; color: #666; line-height: 1.6; max-width: 350px; margin-left: auto; margin-right: auto;">
+    💡 Придумайте свой уникальный логин (например, ваш email).<br>
+    Он понадобится вам для сохранения тренировок и доступа к ним с любого устройства.
   </p>
 </div>
 
@@ -376,14 +379,6 @@
 
 <script src="app.js"></script>
 <script>
-// Устанавливаем Client ID для Google Sign-In
-document.addEventListener('DOMContentLoaded', function() {
-  const gIdOnload = document.getElementById('g_id_onload');
-  if (gIdOnload && typeof GOOGLE_CLIENT_ID !== 'undefined') {
-    gIdOnload.setAttribute('data-client_id', GOOGLE_CLIENT_ID);
-  }
-});
-
 // Регистрация Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')

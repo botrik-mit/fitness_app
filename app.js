@@ -35,12 +35,14 @@ function showApp() {
 }
 
 document.getElementById('loginBtn').onclick = function() {
-  const email = prompt('Введите ваш email для синхронизации данных:');
+  const email = prompt('Придумайте свой логин (например, ваш email).\n\nОн понадобится для доступа к вашим тренировкам с любого устройства:');
   
   if (email && email.trim()) {
     userEmail = email.trim();
     localStorage.setItem('userEmail', userEmail);
     showApp();
+  } else if (email !== null) {
+    alert('⚠️ Логин не может быть пустым. Попробуйте снова.');
   }
 };
 
