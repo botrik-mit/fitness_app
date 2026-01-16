@@ -9,10 +9,57 @@ const SPREADSHEET_ID = '1a7ejvv7Mf6bDQ-WEhFITvZlU8cs9BOJX9r5yMYknyQc';
 
 /**
  * doGet() - точка входа для веб-приложения
- * Возвращает HTML страницу
+ * Обрабатывает GET запросы от PWA
  */
-function doGet() {
-  // Загружаем HTML из файла index.html
+function doGet(e) {
+  // Если есть параметр action - это API запрос от PWA
+  if (e && e.parameter && e.parameter.action) {
+    const action = e.parameter.action;
+    const email = e.parameter.email;
+    
+    Logger.log('GET запрос: action=' + action + ', email=' + email);
+    
+    if (!email) {
+      return ContentService
+        .createTextOutput(JSON.stringify({error: 'Email не указан'}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (action === 'load') {
+      const data = loadDataByEmail(email);
+      return ContentService
+        .createTextOutput(JSON.stringify(data))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (action === 'save') {
+      const dataParam = e.parameter.data;
+      if (!dataParam) {
+        return ContentService
+          .createTextOutput(JSON.stringify({error: 'Нет данных для сохранения'}))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      try {
+        const data = JSON.parse(decodeURIComponent(dataParam));
+        const success = saveDataByEmail(email, data);
+        return ContentService
+          .createTextOutput(JSON.stringify({success: success}))
+          .setMimeType(ContentService.MimeType.JSON);
+      } catch (error) {
+        Logger.log('Ошибка парсинга данных: ' + error.toString());
+        return ContentService
+          .createTextOutput(JSON.stringify({error: 'Ошибка парсинга данных'}))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    
+    return ContentService
+      .createTextOutput(JSON.stringify({error: 'Неизвестное действие'}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  // Если нет параметра action - возвращаем HTML (для старой версии)
   return HtmlService.createTemplateFromFile('index')
     .evaluate()
     .setTitle('План Роста и Тренировок')

@@ -64,15 +64,11 @@ async function loadFromServer() {
   }
   
   try {
-    const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'load',
-        email: userEmail
-      })
+    // Используем GET запрос с параметрами для обхода CORS
+    const url = `${GOOGLE_APPS_SCRIPT_URL}?action=load&email=${encodeURIComponent(userEmail)}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      redirect: 'follow'
     });
     
     const data = await response.json();
@@ -112,16 +108,13 @@ async function saveToServer() {
     console.log('💾 Сохранение данных на сервер...');
     
     try {
-      const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'save',
-          email: userEmail,
-          data: appData
-        })
+      // Используем GET запрос с параметрами для обхода CORS
+      const dataString = encodeURIComponent(JSON.stringify(appData));
+      const url = `${GOOGLE_APPS_SCRIPT_URL}?action=save&email=${encodeURIComponent(userEmail)}&data=${dataString}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        redirect: 'follow'
       });
       
       const result = await response.json();
@@ -144,16 +137,13 @@ async function saveToServerImmediately() {
   clearTimeout(saveTimeout);
   
   try {
-    const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'save',
-        email: userEmail,
-        data: appData
-      })
+    // Используем GET запрос с параметрами для обхода CORS
+    const dataString = encodeURIComponent(JSON.stringify(appData));
+    const url = `${GOOGLE_APPS_SCRIPT_URL}?action=save&email=${encodeURIComponent(userEmail)}&data=${dataString}`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      redirect: 'follow'
     });
     
     const result = await response.json();
