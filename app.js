@@ -3,7 +3,7 @@
 ========================================== */
 // URL вашего Google Apps Script (после деплоя как веб-приложение)
 // Получить можно: Apps Script -> Deploy -> New deployment -> Web app
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz-gmGf7bkuvLITye1JRaZEj0DWXekWVDUQ-5pSwnZqRslMoaBHx6GT0rfkS8iL2aWS/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhCyHh4q8u7VsaLS3JGsxNTF2XvEcSmCrFUbEt_kzBv0W8yXhMmWyscFX9_VvqO2UD/exec';
 
 /* ==========================================
    АУТЕНТИФИКАЦИЯ
