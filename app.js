@@ -1299,7 +1299,6 @@ function renderTotalStats() {
   const avgRPE = rpeCount ? (totalRPE / rpeCount).toFixed(1) : "—";
 
   let trend = "";
-  const completedWeeks = weekStats.filter(v => v > 0);
   if (completedWeeks.length >= 2) {
     const recent = weekStats.slice(-3).filter(v => v > 0);
     const earlier = weekStats.slice(-6, -3).filter(v => v > 0);
