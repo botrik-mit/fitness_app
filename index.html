@@ -761,34 +761,13 @@
 <div id="appContainer" class="app-shell">
 
 <nav>
-  <button onclick="showToday()" class="active">
-    <span>🏠</span>
-    <span>Сегодня</span>
-  </button>
-  <button onclick="showPage('training')">
-    <span>💪</span>
-    <span>Тренинг</span>
-  </button>
-  <button onclick="showPage('nutrition')">
-    <span>🍎</span>
-    <span>Еда</span>
-  </button>
-  <button onclick="showPage('supplements')">
-    <span>💊</span>
-    <span>БАДы</span>
-  </button>
-  <button onclick="showPage('stats')">
-    <span>📊</span>
-    <span>Статы</span>
-  </button>
-  <button onclick="toggleTheme()">
-    <span>🌓</span>
-    <span>Тема</span>
-  </button>
-  <button onclick="logout()" style="color: var(--danger);">
-    <span>🚪</span>
-    <span>Выход</span>
-  </button>
+  <button onclick="showToday()">Сегодня</button>
+  <button onclick="showPage('training')">Тренировки</button>
+  <button onclick="showPage('nutrition')">Заметки</button>
+  <button onclick="showPage('supplements')">Добавки</button>
+  <button onclick="showPage('stats')">Статистика</button>
+  <button class="toggle-theme" onclick="toggleTheme()">Тема</button>
+  <button onclick="logout()" style="color: #ff4d4f;">Выход</button>
 </nav>
 
 <!-- TRAINING -->
@@ -867,13 +846,13 @@
 
 </div>
 
-<!-- NUTRITION -->
+<!-- ZAMETKI -->
 <div id="nutrition" class="container">
-  <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-      <h1 style="margin: 0;">Питание</h1>
-      <button id="editNutritionBtn" class="btn btn-outline btn-sm">Редактировать</button>
-    </div>
+  <h1>Заметки</h1>
+
+  <button id="editNutritionBtn" class="edit-section-btn">✏ Редактировать</button>
+
+  <textarea id="nutritionText" style="width:100%; min-height:180px; padding:12px; border-radius:8px; border:1px solid #aaa; font-size:1em; resize:vertical; display:none; background: var(--bg); color: var(--fg);"></textarea>
 
     <textarea id="nutritionText" class="edit-form" style="width:100%; min-height:200px; display:none;"></textarea>
     <div id="nutritionView" style="white-space:pre-wrap; line-height: 1.6; color: var(--text-secondary);"></div>
