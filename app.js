@@ -1163,8 +1163,11 @@ function renderWeekDiary(selectedWeek) {
       const weight = appData.weights[`weight_w${selectedWeek}_${ex.id}`];
       const rpe = appData.rpe[`rpe_w${selectedWeek}_${ex.id}`];
       const comment = appData.comments[`comment_w${selectedWeek}_${ex.id}`];
+      const taskKey = `task_w${selectedWeek}_${ex.id}`;
+      const isCompleted = appData.tasks && appData.tasks[taskKey];
 
-      if (!weight && !rpe && !comment) return;
+      // Показываем упражнение если есть данные (вес, RPE, комментарий) или если оно выполнено
+      if (!weight && !rpe && !comment && !isCompleted) return;
 
       hasData = true;
 
@@ -1175,6 +1178,7 @@ function renderWeekDiary(selectedWeek) {
             ${weight ? `Вес: <b style="color:var(--text);">${weight} кг</b><br>` : ""}
             ${rpe ? `RPE: <b class="${getRPEClass(rpe)}">${rpe}</b><br>` : ""}
             ${comment ? `<div style="margin-top:4px; font-style:italic; color:var(--text-secondary);">💬 ${comment}</div>` : ""}
+            ${!weight && !rpe && !comment && isCompleted ? `<div style="opacity:.7; font-size:0.875rem;">Выполнено</div>` : ""}
           </div>
         </div>
       `;
@@ -1298,12 +1302,17 @@ function renderTotalStats() {
       for (let w = 1; w <= 12; w++) {
         const rpe = appData.rpe[`rpe_w${w}_${ex.id}`];
         const weight = appData.weights[`weight_w${w}_${ex.id}`];
+        const taskKey = `task_w${w}_${ex.id}`;
+        const isCompleted = appData.tasks && appData.tasks[taskKey];
+        
         if (rpe) {
           totalRPE += Number(rpe);
           rpeCount++;
           exHasData = true;
         }
         if (weight) exHasData = true;
+        // Учитываем упражнение, если оно отмечено чекбоксом
+        if (isCompleted) exHasData = true;
       }
       if (exHasData) totalExercises++;
     });
