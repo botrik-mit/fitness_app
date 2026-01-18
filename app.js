@@ -1370,7 +1370,7 @@ function renderTotalStats() {
 
     <div class="card" style="background: var(--bg); border: none;">
       <h3 style="font-size:0.9rem; text-transform:uppercase; color:var(--text-secondary); margin-bottom:16px;">Прогресс выполнения (%)</h3>
-      <div class="progress-chart-container" style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; align-items: flex-end; height: 130px;">
+      <div class="progress-chart-container" style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; align-items: flex-end; height: 130px; width: 100%;">
         ${progressChart}
       </div>
     </div>
