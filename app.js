@@ -755,9 +755,11 @@ function renderTrainingPlan(){
         </button>
       `;
 
+      const exerciseRightClass = ex.hasWeight ? "exercise-right" : "exercise-right no-weight";
+      
       row.innerHTML = `
         <div class="exercise-left">${left}</div>
-        <div class="exercise-right">${right}</div>
+        <div class="${exerciseRightClass}">${right}</div>
       `;
       block.appendChild(row);
     });
@@ -1252,7 +1254,9 @@ function showStatsMode(mode) {
 
   if (mode === "week") {
     weekBtn.style.background = "var(--card)";
+    weekBtn.style.color = "var(--primary)";
     totalBtn.style.background = "transparent";
+    totalBtn.style.color = "var(--text-secondary)";
     
     document.getElementById("weekStatsControls").style.display = "block";
     weekSummary.style.display = "block";
@@ -1262,7 +1266,9 @@ function showStatsMode(mode) {
     renderWeekStats(+weekSelect.value);
   } else {
     weekBtn.style.background = "transparent";
+    weekBtn.style.color = "var(--text-secondary)";
     totalBtn.style.background = "var(--card)";
+    totalBtn.style.color = "var(--primary)";
 
     document.getElementById("weekStatsControls").style.display = "none";
     weekSummary.style.display = "none";
