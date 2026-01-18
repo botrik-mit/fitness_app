@@ -1544,10 +1544,6 @@ function renderTotalStats() {
         <div class="stat-label">Средний RPE</div>
         <div class="stat-value">${avgRPE}</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Упражнений</div>
-        <div class="stat-value">${totalExercises}</div>
-      </div>
     </div>
 
     <div class="card" style="background: var(--bg); border: none;">
