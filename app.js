@@ -329,6 +329,22 @@ function applyLoadedData() {
   week = appData.week;
   weekStats = appData.weekStats;
   
+  // Восстанавливаем названия упражнений из текущего плана для существующих ID
+  if (trainingData && trainingData.days) {
+    trainingData.days.forEach(day => {
+      if (day.exercises) {
+        day.exercises.forEach(ex => {
+          if (ex.id && ex.name) {
+            // Сохраняем название с разными вариантами ключей (число и строка)
+            appData.exerciseNames[ex.id] = ex.name;
+            appData.exerciseNames[String(ex.id)] = ex.name;
+            appData.exerciseNames[Number(ex.id)] = ex.name;
+          }
+        });
+      }
+    });
+  }
+  
   if (trainingData.days.length && !selectedDayId) {
     selectedDayId = trainingData.days[0].id;
   }
@@ -1298,7 +1314,8 @@ function renderWeekDiary(selectedWeek) {
       if (!weight && !rpe && !comment && !isCompleted) return;
 
       // Получаем название упражнения из appData.exerciseNames или используем fallback
-      const exerciseName = (appData.exerciseNames && appData.exerciseNames[exId]) || 'Удаленное упражнение';
+      // Приводим exId к числу для корректного сравнения, так как ID сохраняется как число
+      const exerciseName = (appData.exerciseNames && (appData.exerciseNames[exId] || appData.exerciseNames[Number(exId)] || appData.exerciseNames[String(exId)])) || 'Удаленное упражнение';
 
       deletedHTML += `
         <div style="background:var(--card); padding:12px; border-radius:8px; margin-top:8px; border: 1px solid var(--border); opacity:0.9;">
@@ -1426,30 +1443,74 @@ function renderTotalStats() {
   let totalExercises = 0;
   let hasAnyData = false;
 
-  trainingData.days.forEach(day => {
-    day.exercises.forEach(ex => {
-      let exHasData = false;
-      for (let w = 1; w <= 12; w++) {
-        const rpe = appData.rpe[`rpe_w${w}_${ex.id}`];
-        const weight = appData.weights[`weight_w${w}_${ex.id}`];
-        const taskKey = `task_w${w}_${ex.id}`;
-        const oldTaskKey = `task_${ex.id}`;
-        // Поддержка старого формата для обратной совместимости
-        const isCompleted = appData.tasks && (appData.tasks[taskKey] === true || appData.tasks[oldTaskKey] === true);
-        
-        if (rpe) {
-          totalRPE += Number(rpe);
-          rpeCount++;
-          exHasData = true;
+  // Собираем все уникальные ID упражнений из appData для всех недель
+  const allExerciseIds = new Set();
+  
+  // Собираем ID из всех источников данных для всех недель
+  for (let w = 1; w <= 12; w++) {
+    if (appData.weights) {
+      Object.keys(appData.weights).forEach(key => {
+        if (key.startsWith(`weight_w${w}_`)) {
+          const exId = key.replace(`weight_w${w}_`, '');
+          allExerciseIds.add(exId);
         }
-        if (weight) exHasData = true;
-        // Учитываем упражнение, если оно отмечено чекбоксом
-        if (isCompleted === true) {
-          exHasData = true;
+      });
+    }
+    if (appData.rpe) {
+      Object.keys(appData.rpe).forEach(key => {
+        if (key.startsWith(`rpe_w${w}_`)) {
+          const exId = key.replace(`rpe_w${w}_`, '');
+          allExerciseIds.add(exId);
         }
+      });
+    }
+    if (appData.comments) {
+      Object.keys(appData.comments).forEach(key => {
+        if (key.startsWith(`comment_w${w}_`)) {
+          const exId = key.replace(`comment_w${w}_`, '');
+          allExerciseIds.add(exId);
+        }
+      });
+    }
+    if (appData.tasks) {
+      Object.keys(appData.tasks).forEach(key => {
+        if (key.startsWith(`task_w${w}_`)) {
+          const exId = key.replace(`task_w${w}_`, '');
+          if (appData.tasks[key] === true) {
+            allExerciseIds.add(exId);
+          }
+        } else if (key.startsWith('task_') && !key.includes('_w')) {
+          // Старый формат
+          const exId = key.replace('task_', '');
+          if (appData.tasks[key] === true) {
+            allExerciseIds.add(exId);
+          }
+        }
+      });
+    }
+  }
+
+  // Подсчитываем статистику для всех упражнений из appData
+  allExerciseIds.forEach(exId => {
+    let exHasData = false;
+    for (let w = 1; w <= 12; w++) {
+      const rpe = appData.rpe[`rpe_w${w}_${exId}`];
+      const weight = appData.weights[`weight_w${w}_${exId}`];
+      const taskKey = `task_w${w}_${exId}`;
+      const oldTaskKey = `task_${exId}`;
+      const isCompleted = appData.tasks && (appData.tasks[taskKey] === true || appData.tasks[oldTaskKey] === true);
+      
+      if (rpe) {
+        totalRPE += Number(rpe);
+        rpeCount++;
+        exHasData = true;
       }
-      if (exHasData) totalExercises++;
-    });
+      if (weight) exHasData = true;
+      if (isCompleted === true) {
+        exHasData = true;
+      }
+    }
+    if (exHasData) totalExercises++;
   });
 
   const avgRPE = rpeCount ? (totalRPE / rpeCount).toFixed(1) : "—";
