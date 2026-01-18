@@ -83,10 +83,15 @@
   body.dark .rpe-select,
   body.dark .weight-input,
   body.dark .edit-form input,
-  body.dark .edit-form select,
-  body.dark .edit-form textarea {
+  body.dark .edit-form select {
     background: var(--bg);
     color: var(--text);
+    border-color: var(--border);
+  }
+
+  body.dark .edit-form textarea {
+    background: var(--bg);
+    color: white !important;
     border-color: var(--border);
   }
 
@@ -116,10 +121,6 @@
   body.dark #nutritionView {
     color: var(--text-secondary) !important;
     background: transparent;
-  }
-
-  body.dark .edit-form textarea {
-    color: white !important;
   }
 
   body.dark .supplement-textarea {
@@ -708,12 +709,11 @@
     .exercise-right.no-weight {
       justify-content: flex-end;
     }
-    .weight-input,
-    .rpe-select {
+    .weight-input {
       flex: 1;
       min-width: 0;
     }
-    .exercise-right.no-weight .rpe-select {
+    .rpe-select {
       flex: 0 0 auto;
       width: 70px;
     }
