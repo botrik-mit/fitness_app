@@ -245,13 +245,15 @@ function syncDOMToTrainingData() {
     }
   });
   
-  document.querySelectorAll('.task').forEach(checkbox => {
-    const id = checkbox.dataset.id;
-    if (id) {
-      const key = `task_${id}`;
-      appData.tasks[key] = checkbox.checked;
-    }
-  });
+  if (week) {
+    document.querySelectorAll('.task').forEach(checkbox => {
+      const id = checkbox.dataset.id;
+      if (id) {
+        const key = `task_w${week}_${id}`;
+        appData.tasks[key] = checkbox.checked;
+      }
+    });
+  }
 }
 
 // ==========================================
@@ -778,14 +780,21 @@ function renderTrainingPlan(){
    ЧЕКБОКСЫ
 ========================================== */
 function initDynamicCheckboxes(){
+  if (!week) return;
   document.querySelectorAll(".task").forEach(t=>{
     const id = t.dataset.id;
-    const key = "task_"+id;
-    const saved = appData.tasks[key];
+    const key = `task_w${week}_${id}`;
+    // Поддержка старого формата для обратной совместимости
+    const oldKey = `task_${id}`;
+    const saved = appData.tasks[key] !== undefined ? appData.tasks[key] : appData.tasks[oldKey];
     if(saved === true) t.checked = true;
 
     t.onchange = ()=>{
       appData.tasks[key] = t.checked;
+      // Удаляем старый формат при сохранении
+      if (appData.tasks[oldKey] !== undefined) {
+        delete appData.tasks[oldKey];
+      }
       afterDataChange();
     };
   });
@@ -890,8 +899,6 @@ function nextWeek(){
   syncDOMToTrainingData();
   
   updateStats();
-
-  appData.tasks = {};
   
   week++;
   appData.week = week;
@@ -1164,7 +1171,9 @@ function renderWeekDiary(selectedWeek) {
       const rpe = appData.rpe[`rpe_w${selectedWeek}_${ex.id}`];
       const comment = appData.comments[`comment_w${selectedWeek}_${ex.id}`];
       const taskKey = `task_w${selectedWeek}_${ex.id}`;
-      const isCompleted = appData.tasks && appData.tasks[taskKey];
+      const oldTaskKey = `task_${ex.id}`;
+      // Поддержка старого формата для обратной совместимости
+      const isCompleted = appData.tasks && (appData.tasks[taskKey] || appData.tasks[oldTaskKey]);
 
       // Показываем упражнение если есть данные (вес, RPE, комментарий) или если оно выполнено
       if (!weight && !rpe && !comment && !isCompleted) return;
@@ -1303,7 +1312,9 @@ function renderTotalStats() {
         const rpe = appData.rpe[`rpe_w${w}_${ex.id}`];
         const weight = appData.weights[`weight_w${w}_${ex.id}`];
         const taskKey = `task_w${w}_${ex.id}`;
-        const isCompleted = appData.tasks && appData.tasks[taskKey];
+        const oldTaskKey = `task_${ex.id}`;
+        // Поддержка старого формата для обратной совместимости
+        const isCompleted = appData.tasks && (appData.tasks[taskKey] === true || appData.tasks[oldTaskKey] === true);
         
         if (rpe) {
           totalRPE += Number(rpe);
@@ -1312,7 +1323,9 @@ function renderTotalStats() {
         }
         if (weight) exHasData = true;
         // Учитываем упражнение, если оно отмечено чекбоксом
-        if (isCompleted) exHasData = true;
+        if (isCompleted === true) {
+          exHasData = true;
+        }
       }
       if (exHasData) totalExercises++;
     });
