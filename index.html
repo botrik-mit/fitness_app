@@ -40,10 +40,83 @@
     --bg: #111827;
     --card: #1F2937;
     --text: #F9FAFB;
-    --text-secondary: #9CA3AF;
-    --border: #374151;
+    --text-secondary: #D1D5DB;
+    --border: #4B5563;
     --accent-bg: #374151;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Улучшенная контрастность для темной темы */
+  body.dark .stat-label {
+    color: var(--text-secondary);
+  }
+
+  body.dark .stat-value {
+    color: var(--text);
+  }
+
+  body.dark .day-btn {
+    color: var(--text-secondary);
+    border-color: var(--border);
+    background: var(--card);
+  }
+
+  body.dark .day-btn.active {
+    color: white;
+    background: var(--primary);
+  }
+
+  body.dark .exercise-left label,
+  body.dark .editable-item span,
+  body.dark .exercise-editor-item span {
+    color: var(--text);
+  }
+
+  body.dark .exercise-left label small {
+    color: var(--text-secondary);
+  }
+
+  body.dark .last-weight {
+    color: var(--primary);
+  }
+
+  body.dark .rpe-select,
+  body.dark .weight-input,
+  body.dark .edit-form input,
+  body.dark .edit-form select,
+  body.dark .edit-form textarea {
+    background: var(--bg);
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  body.dark .supplement-view,
+  body.dark #nutritionView {
+    color: var(--text-secondary);
+    background: var(--accent-bg);
+  }
+
+  body.dark .card {
+    background: var(--card);
+    border-color: var(--border);
+  }
+
+  body.dark .day {
+    background: var(--card);
+    border-color: var(--border);
+  }
+
+  body.dark .day h3 {
+    color: var(--primary);
+    border-color: var(--border);
+  }
+
+  body.dark nav button {
+    color: var(--text-secondary);
+  }
+
+  body.dark nav button.active {
+    color: var(--primary);
   }
 
   * {
@@ -98,6 +171,7 @@
     min-height: 100vh;
     padding: 24px;
     text-align: center;
+    background-color: var(--bg);
   }
 
   .auth-card {
@@ -107,6 +181,7 @@
     box-shadow: var(--shadow-lg);
     width: 100%;
     max-width: 400px;
+    margin: auto; /* Дополнительная страховка для центрирования */
   }
 
   #authScreen h1 {
@@ -153,29 +228,47 @@
     border: 1px solid var(--border);
     border-radius: 20px;
     padding: 8px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
     gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
     box-shadow: var(--shadow-lg);
     z-index: 1000;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  nav::-webkit-scrollbar {
+    display: none;
   }
 
   nav button {
     background: transparent;
     border: none;
-    padding: 10px 4px;
+    padding: 8px 6px;
     border-radius: 12px;
     color: var(--text-secondary);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 500;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
     transition: all 0.2s;
+    flex-shrink: 0;
+    min-width: 60px;
+    white-space: nowrap;
+  }
+
+  nav button span:first-child {
+    font-size: 1.1rem;
+  }
+
+  nav button span:last-child {
+    font-size: 0.65rem;
   }
 
   nav button:hover {
@@ -186,11 +279,6 @@
   nav button.active, nav button:active {
     background: var(--accent-bg);
     color: var(--primary);
-  }
-
-  /* Hide some buttons on mobile to fit 4-5 items */
-  nav button:nth-child(n+6) {
-    display: none;
   }
 
   .nav-more-menu {
@@ -300,7 +388,8 @@
 
   .exercise-row {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
     padding: 12px 0;
     border-bottom: 1px solid var(--border);
     gap: 12px;
@@ -310,8 +399,10 @@
 
   .exercise-left {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
+    flex: 1;
+    min-width: 0;
   }
 
   .exercise-left label {
@@ -321,6 +412,21 @@
     font-weight: 600;
     cursor: pointer;
     flex: 1;
+    min-width: 0;
+  }
+
+  .exercise-left label span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .exercise-left label small {
+    display: inline;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-left: 4px;
   }
 
   input[type="checkbox"] {
@@ -356,29 +462,37 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-shrink: 0;
   }
 
   .weight-input {
-    width: 70px;
-    padding: 8px;
+    width: 65px;
+    padding: 8px 6px;
     border-radius: 8px;
     border: 1px solid var(--border);
     background: var(--bg);
     color: var(--text);
     text-align: center;
     font-weight: 600;
+    font-size: 0.875rem;
+  }
+
+  .last-weight {
+    font-size: 0.7rem;
+    color: var(--primary);
+    font-weight: 600;
+    white-space: nowrap;
   }
 
   .rpe-select {
-    flex: 1;
-    min-width: 80px;
-    padding: 8px;
+    width: 70px;
+    padding: 8px 6px;
     border-radius: 8px;
     border: 1px solid var(--border);
     background: var(--bg);
     color: var(--text);
     font-size: 0.875rem;
+    text-align: center;
   }
 
   .comment-btn {
@@ -519,16 +633,48 @@
     letter-spacing: 0.05em;
   }
 
+  /* Mobile adjustments for exercise rows */
+  @media (max-width: 480px) {
+    .exercise-row {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .exercise-left {
+      min-width: 100%;
+      order: 1;
+    }
+    .exercise-right {
+      min-width: 100%;
+      order: 2;
+      justify-content: flex-start;
+    }
+    .weight-input,
+    .rpe-select {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
   /* Desktop Adjustments */
   @media (min-width: 640px) {
     nav {
       position: static;
       margin-bottom: 24px;
+      display: grid;
       grid-template-columns: repeat(7, 1fr);
       border-radius: var(--radius-lg);
+      overflow: visible;
     }
-    nav button:nth-child(n+6) {
-      display: flex;
+    nav button {
+      min-width: auto;
+      padding: 10px 8px;
+      font-size: 0.8rem;
+    }
+    nav button span:first-child {
+      font-size: 1.2rem;
+    }
+    nav button span:last-child {
+      font-size: 0.75rem;
     }
     .app-shell {
       padding-bottom: 40px;

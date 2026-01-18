@@ -24,7 +24,7 @@ function checkAuth() {
 }
 
 function showAuth() {
-  document.getElementById('authScreen').style.display = 'block';
+  document.getElementById('authScreen').style.display = 'flex';
   document.getElementById('appContainer').style.display = 'none';
 }
 
@@ -346,6 +346,9 @@ function applyLoadedData() {
   loadWeightsForCurrentWeek();
   
   updateAllUI();
+  
+  // Показываем страницу тренировок при загрузке
+  showPage('training');
 }
 
 /* ==========================================
@@ -731,32 +734,25 @@ function renderTrainingPlan(){
       const left = `
         <label>
           <input type="checkbox" class="task" data-id="${ex.id}">
-          <span>${ex.name} <small style="display:block; font-weight:400; color:var(--text-secondary);">${ex.sets} × ${ex.reps}</small></span>
+          <span>${ex.name} <small>${ex.sets} × ${ex.reps}</small></span>
         </label>
       `;
 
       let right = ``;
 
       if (ex.hasWeight) {
-        right += `
-          <div style="display:flex; align-items:center; gap:8px;">
-            <input type="text" class="weight-input" data-id="${ex.id}" placeholder="кг">
-            <span class="last-weight" data-id="${ex.id}" style="font-size:0.75rem; color:var(--primary); font-weight:600;"></span>
-          </div>
-        `;
+        right += `<input type="text" class="weight-input" data-id="${ex.id}" placeholder="кг">`;
+        right += `<span class="last-weight" data-id="${ex.id}"></span>`;
       }
 
       right += `
-        <div style="display:flex; align-items:center; gap:8px;">
-          <select class="rpe-select" data-id="${ex.id}">
-            <option value="">RPE</option>
-            ${[...Array(10)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
-          </select>
-
-          <button class="comment-btn" data-id="${ex.id}">
-            💬<span class="comment-star" style="visibility:hidden;">★</span>
-          </button>
-        </div>
+        <select class="rpe-select" data-id="${ex.id}">
+          <option value="">RPE</option>
+          ${[...Array(10)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
+        </select>
+        <button class="comment-btn" data-id="${ex.id}">
+          💬<span class="comment-star" style="visibility:hidden;">★</span>
+        </button>
       `;
 
       row.innerHTML = `
