@@ -10,6 +10,9 @@
 <meta name="apple-mobile-web-app-title" content="План Тренировок" />
 <link rel="apple-touch-icon" href="icon/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>План Роста и Тренировок</title>
 
 <!-- Supabase JS -->
@@ -17,315 +20,606 @@
 
 <style>
   :root {
-    --bg: #f5f5f5;
-    --fg: #222;
-    --card: #ffffff;
-    --day-bg: #eef4ff;
-    --accent: #4a7dff;
+    --primary: #3C7EED;
+    --primary-hover: #2D6AD4;
+    --bg: #F8F9FB;
+    --card: #FFFFFF;
+    --text: #1F2937;
+    --text-secondary: #6B7280;
+    --border: #E5E7EB;
+    --accent-bg: #EEF2FF;
+    --success: #10B981;
+    --danger: #EF4444;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --radius: 12px;
+    --radius-lg: 16px;
   }
+
   body.dark {
-    --bg: #0e0e0e;
-    --fg: #e0e0e0;
-    --card: #1a1a1a;
-    --day-bg: #232323;
-    --accent: #729dff;
+    --bg: #111827;
+    --card: #1F2937;
+    --text: #F9FAFB;
+    --text-secondary: #9CA3AF;
+    --border: #374151;
+    --accent-bg: #374151;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   }
-  
-  body.dark .edit-btn {
-    background: rgba(114, 157, 255, 0.15);
-    color: var(--accent);
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
   }
-  
-  body.dark .del-btn {
-    background: rgba(255, 77, 79, 0.15);
-    color: #ff6b6b;
-  }
-  
+
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     margin: 0;
-    padding: 20px;
-    background: var(--bg);
-    color: var(--fg);
-    transition: 0.3s;
-    font-size: 16px;
+    padding: 0;
+    background-color: var(--bg);
+    color: var(--text);
     line-height: 1.5;
+    transition: background-color 0.3s, color 0.3s;
+    min-height: 100vh;
   }
-  
-  /* AUTH SCREEN */
-  #authScreen {
-    max-width: 400px;
-    margin: 100px auto;
-    text-align: center;
-    background: var(--card);
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+
+  h1, h2, h3 {
+    margin: 0 0 1rem 0;
+    font-weight: 700;
+    letter-spacing: -0.025em;
   }
-  
-  #authScreen h1 {
-    margin-bottom: 30px;
-    color: var(--accent);
+
+  h1 { font-size: 1.875rem; }
+  h2 { font-size: 1.5rem; margin-top: 2rem; }
+  h3 { font-size: 1.125rem; }
+
+  /* Layout Containers */
+  .app-shell {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 20px 16px 100px;
   }
-  
-  #loginBtn {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 10px;
-    font-size: 1em;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(74, 125, 255, 0.3);
-    transition: 0.2s;
-  }
-  
-  #loginBtn:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-  }
-  
-  #appContainer {
+
+  .container {
     display: none;
+    animation: fadeIn 0.3s ease-out;
   }
-  
-  nav { margin:20px auto; max-width:900px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
-    background:var(--card); padding:10px; border-radius:12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-  nav button { padding:8px 12px; border-radius:10px; border:1px solid rgba(128,128,128,0.2); background:var(--card);
-    color:var(--fg); cursor:pointer; font-size: 0.9em; transition: 0.2s; font-weight: 500; }
-  nav button:active { background: var(--accent); color: white; border-color: var(--accent); }
-  
-  .container { max-width: 900px; margin: auto; background: var(--card); padding: 25px;
-    border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display:none; }
-  #training { display:block; }
-  
-  .next-week-btn {
-    padding: 10px 20px; margin-bottom: 20px; border-radius: 10px; border: none;
-    background: var(--accent); color: white; cursor: pointer; font-size: 0.95em; font-weight: 600;
-    box-shadow: 0 4px 12px rgba(74, 125, 255, 0.3); transition: 0.2s;
-  }
-  .next-week-btn:disabled {
-    opacity: 0.5; cursor: not-allowed; box-shadow: none;
-  }
-  
-  .day { background: var(--day-bg); padding:15px; margin-bottom:15px; border-radius:12px; border: 1px solid rgba(128,128,128,0.05); }
-  input[type="checkbox"] { width: 20px; height: 20px; margin-right:12px; cursor: pointer; accent-color: var(--accent); }
-  
-  .progress-container { width:100%; background:rgba(128,128,128,0.2); border-radius:10px; margin:15px 0; height: 10px; overflow: hidden; }
-  .progress-bar { height:100%; background:var(--accent); width:0%; transition:0.4s; }
-  
-  .exercise-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; gap: 10px; }
-  .exercise-left { flex: 1; display: flex; align-items: center; font-weight: 500; }
-  .exercise-right { display: flex; align-items: center; gap: 8px; }
-  
-  .weight-input { width: 65px; padding: 6px 8px; border: 1px solid rgba(128,128,128,0.3); border-radius: 8px;
-    font-size: 0.9em; background: var(--bg); color: var(--fg); text-align: center; }
-  .weight-input::-webkit-outer-spin-button,
-  .weight-input::-webkit-inner-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
-  .weight-input[type=number] { -moz-appearance: textfield; appearance: textfield; }
-  .last-weight { font-size: 0.8em; color: #4a7dff; min-width: 60px; margin-left: 15px; font-weight: 600; }
-  
-  .rpe-select { padding: 5px; border-radius: 8px; font-size: 0.85em; border: 1px solid rgba(128,128,128,0.3); background: var(--bg); color: var(--fg); }
-  .comment-btn { border: none; background: rgba(128,128,128,0.1); cursor: pointer; font-size: 1em; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; }
-  .comment-star { position: absolute; top: -2px; right: -2px; font-size: 0.7em; color: var(--accent); visibility: hidden; }
-  
-  .editable-list { list-style: none; padding: 0; margin: 10px 0; width: 100%; }
-  .editable-item, .exercise-editor-item {
-    display: flex; justify-content: space-between; align-items: center;
-    background: var(--bg); padding: 12px 15px; margin-bottom: 10px; border-radius: 12px; 
-    border: 1px solid rgba(128,128,128,0.1); width: 100%; box-sizing: border-box;
-  }
-  .editable-item span, .exercise-editor-item span { flex: 1; padding-right: 10px; }
-  .editable-item div, .exercise-editor-item div { display: flex; gap: 6px; flex-shrink: 0; }
-  .editable-item button, .exercise-editor-item button { 
-    cursor: pointer; width: 32px; height: 32px; border-radius: 8px; border: none; 
-    display: flex; align-items: center; justify-content: center; font-size: 0.9em; transition: 0.2s;
-  }
-  .edit-btn { background: #eef4ff; color: #4a7dff; }
-  .del-btn { background: #fff1f0; color: #ff4d4f; }
-  
-  .edit-section-btn {
-    padding: 10px 20px; margin-bottom: 20px; border-radius: 10px;
-    border: 1px solid var(--accent); background: var(--card); color: var(--accent);
-    cursor: pointer; font-size: 0.9em; font-weight: 600; transition: 0.2s;
-  }
-  .edit-section-btn:hover {
-    background: var(--accent); color: white;
-  }
-  
-  #addDayBtn, #addExerciseBtn {
-    padding: 10px 20px; margin: 15px 0; border-radius: 10px;
-    border: 1px dashed var(--accent); background: var(--card); color: var(--accent);
-    cursor: pointer; font-size: 0.9em; font-weight: 600; transition: 0.2s;
-    width: 100%;
-  }
-  #addDayBtn:hover, #addExerciseBtn:hover {
-    background: rgba(74, 125, 255, 0.05); border-style: solid;
-  }
-  
-  .edit-form { background: var(--card); padding: 20px; border-radius: 16px; margin: 20px 0; border: 1px solid var(--accent); box-shadow: 0 8px 25px rgba(0,0,0,0.1); display: none; transition: 0.3s; }
-  .edit-form.active { display: block; animation: slideIn 0.3s ease; }
-  
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-10px); }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  
-  .edit-form label { display: block; margin-top: 12px; font-weight: 600; font-size: 0.9em; opacity: 0.8; }
-  .edit-form input, .edit-form select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid rgba(128,128,128,0.2);
-    border-radius: 10px; font-size: 1em; background: var(--bg); color: var(--fg); box-sizing: border-box; }
-  
-  .edit-form .checkbox-wrapper { 
-    display: flex; 
-    align-items: center; 
-    gap: 10px; 
-    margin: 15px 0; 
-    padding: 10px 0;
+
+  /* AUTH SCREEN */
+  #authScreen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 24px;
+    text-align: center;
   }
-  .edit-form .checkbox-wrapper input[type="checkbox"] { 
-    width: 20px; 
-    height: 20px; 
-    margin: 0; 
-    cursor: pointer; 
-    accent-color: var(--accent);
-    flex-shrink: 0;
+
+  .auth-card {
+    background: var(--card);
+    padding: 40px 32px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 400px;
   }
-  .edit-form .checkbox-wrapper label { 
-    margin: 0; 
-    font-weight: normal; 
-    opacity: 1; 
+
+  #authScreen h1 {
+    color: var(--primary);
+    margin-bottom: 12px;
+  }
+
+  #authScreen p {
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+  }
+
+  #loginBtn {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 16px 24px;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(60, 126, 237, 0.2);
+  }
+
+  #loginBtn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(60, 126, 237, 0.3);
+  }
+
+  #loginBtn:active {
+    transform: translateY(0);
+  }
+
+  /* Navigation */
+  nav {
+    position: fixed;
+    bottom: 20px;
+    left: 16px;
+    right: 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  nav button {
+    background: transparent;
+    border: none;
+    padding: 10px 4px;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+  }
+
+  nav button:hover {
+    background: var(--accent-bg);
+    color: var(--primary);
+  }
+
+  nav button.active, nav button:active {
+    background: var(--accent-bg);
+    color: var(--primary);
+  }
+
+  /* Hide some buttons on mobile to fit 4-5 items */
+  nav button:nth-child(n+6) {
+    display: none;
+  }
+
+  .nav-more-menu {
+    position: fixed;
+    bottom: 90px;
+    right: 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px;
+    box-shadow: var(--shadow-lg);
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 150px;
+    z-index: 1001;
+  }
+
+  /* Card Component */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    border: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .btn-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+  }
+
+  .btn-full { width: 100%; }
+
+  /* Training Section */
+  .progress-container {
+    width: 100%;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    margin: 1.5rem 0;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--primary);
+    width: 0%;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .next-week-btn {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 24px;
+    border-radius: var(--radius);
+    border: none;
+    background: var(--success);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  }
+
+  /* Dynamic Days */
+  .day {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+
+  .day h3 {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    color: var(--primary);
+  }
+
+  .exercise-row {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+
+  .exercise-row:last-child { border-bottom: none; }
+
+  .exercise-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .exercise-left label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
     cursor: pointer;
     flex: 1;
   }
-  
-  .edit-form .form-buttons { display: flex; gap: 10px; margin-top: 20px; }
-  .edit-form .save-btn, .edit-form .cancel-btn { 
-    flex: 1; padding: 12px; border-radius: 10px; border: none; 
-    font-size: 1em; font-weight: 600; cursor: pointer; transition: 0.2s;
-  }
-  .edit-form .save-btn { background: var(--accent); color: white; }
-  .edit-form .save-btn:hover { opacity: 0.9; }
-  .edit-form .cancel-btn { background: rgba(128,128,128,0.15); color: var(--fg); }
-  .edit-form .cancel-btn:hover { background: rgba(128,128,128,0.25); }
-  
-  .day-btn { padding: 8px 15px; border-radius: 10px; border: 1px solid rgba(128,128,128,0.2); background: var(--card); 
-    color: var(--fg); cursor: pointer; font-size: 0.85em; transition: 0.2s; font-weight: 500; }
-  .day-btn.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(74, 125, 255, 0.2); }
-  
-  #daySelector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
-  
-  hr { border: 0; border-top: 1px solid rgba(128,128,128,0.1); margin: 30px 0; }
-  
-  .supplement-section { margin-bottom: 25px; }
-  .supplement-textarea { width: 100%; min-height: 100px; padding: 12px; border-radius: 8px; border: 1px solid #aaa;
-    font-size: 1em; resize: vertical; display: none; background: var(--bg); color: var(--fg); box-sizing: border-box; }
-  .supplement-view { white-space: pre-wrap; background: var(--day-bg); padding: 14px; border-radius: 8px; min-height: 50px; }
-  
-  /* График прогресса по неделям */
-  .progress-chart-container {
-    display: flex; gap: 8px; justify-content: center; align-items: flex-end;
-    margin: 16px 0; min-height: 120px; overflow-x: auto; padding: 5px;
-  }
-  .progress-chart-bar {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    min-width: 30px; flex-shrink: 0;
-  }
-  
-  /* RPE цветовая индикация */
-  .rpe-low { color: #2ecc71; font-weight: 600; }
-  .rpe-mid { color: #f1c40f; font-weight: 600; }
-  .rpe-high { color: #e74c3c; font-weight: 600; }
 
-  /* МОБИЛЬНАЯ АДАПТАЦИЯ */
-  @media (max-width: 768px) {
-    body { padding: 10px; font-size: 15px; padding-bottom: 140px; }
-    h1 { font-size: 1.5em !important; margin: 15px 0 !important; }
-    h2 { font-size: 1.3em !important; margin: 12px 0 !important; }
-    
-    nav { position: fixed; bottom: 0; left: 0; right: 0; margin: 0; padding: 12px 10px 25px; gap: 8px; border-radius: 24px 24px 0 0;
-      box-shadow: 0 -5px 20px rgba(0,0,0,0.15); background: var(--card); z-index: 999; display: grid; grid-template-columns: repeat(3, 1fr); }
-    nav button { padding: 10px 5px; font-size: 0.75em; min-height: 44px; border-radius: 12px; }
-    
-    .container { padding: 15px; margin: 5px auto 140px; border-radius: 24px; }
-    .next-week-btn { padding: 14px; font-size: 0.95em; width: 100%; border-radius: 14px; }
-    
-    .day { padding: 15px; margin-bottom: 12px; }
-    input[type="checkbox"] { width: 22px; height: 22px; margin-right: 10px; }
-    
-    .exercise-row { flex-direction: column; align-items: flex-start; gap: 10px; padding: 5px 0; border-bottom: 1px solid rgba(128,128,128,0.1); }
-    .exercise-right { 
-      width: 100%; 
-      display: grid;
-      grid-template-columns: 70px 55px 90px 38px;
-      gap: 8px;
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    background: var(--card);
+    flex-shrink: 0;
+  }
+
+  input[type="checkbox"]:checked {
+    background: var(--success);
+    border-color: var(--success);
+  }
+
+  input[type="checkbox"]:checked::after {
+    content: "✓";
+    position: absolute;
+    color: white;
+    font-size: 14px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .exercise-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .weight-input {
+    width: 70px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .rpe-select {
+    flex: 1;
+    min-width: 80px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.875rem;
+  }
+
+  .comment-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    font-size: 1.25rem;
+    cursor: pointer;
+  }
+
+  .comment-star {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 10px;
+    color: var(--primary);
+    background: var(--card);
+    border-radius: 50%;
+    padding: 2px;
+  }
+
+  /* Forms & Editors */
+  .edit-form {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin: 16px 0;
+    border: 2px solid var(--primary);
+    box-shadow: var(--shadow-lg);
+    display: none;
+  }
+
+  .edit-form.active { display: block; }
+
+  .edit-form label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .edit-form input, .edit-form select, .edit-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    margin-bottom: 16px;
+    font-size: 1rem;
+  }
+
+  .form-buttons {
+    display: flex;
+    gap: 12px;
+  }
+
+  /* List Items in Editor */
+  .editable-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+
+  .editable-item, .exercise-editor-item {
+    background: var(--card);
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Day Selector */
+  #daySelector {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 0 12px;
+    margin-bottom: 16px;
+    scrollbar-width: none;
+  }
+
+  #daySelector::-webkit-scrollbar { display: none; }
+
+  .day-btn {
+    white-space: nowrap;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  .day-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--accent-bg);
+    padding: 16px;
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Desktop Adjustments */
+  @media (min-width: 640px) {
+    nav {
+      position: static;
+      margin-bottom: 24px;
+      grid-template-columns: repeat(7, 1fr);
+      border-radius: var(--radius-lg);
+    }
+    nav button:nth-child(n+6) {
+      display: flex;
+    }
+    .app-shell {
+      padding-bottom: 40px;
+    }
+    .exercise-row {
+      flex-direction: row;
+      justify-content: space-between;
       align-items: center;
     }
-    
-    .weight-input { width: 100% !important; min-height: 38px; font-size: 1em !important; }
-    .last-weight { min-width: auto; font-size: 0.75em; }
-    .rpe-select { width: 100%; min-height: 38px; font-size: 0.9em; }
-    .comment-btn { width: 38px; height: 38px; font-size: 1.2em; }
-    
-    .editable-item, .exercise-editor-item { padding: 10px !important; }
-    .editable-item button, .exercise-editor-item button { width: 36px; height: 36px; font-size: 1em; }
-    
-    .edit-form { padding: 15px; }
-    .edit-form input, .edit-form select { min-height: 44px; font-size: 16px; }
-    .edit-form .checkbox-wrapper { margin: 12px 0; gap: 12px; }
-    .edit-form .checkbox-wrapper input[type="checkbox"] { width: 24px; height: 24px; min-width: 24px; }
-    .edit-form .checkbox-wrapper label { font-size: 16px; }
-    
-    .progress-chart-container { justify-content: flex-start; }
-    .progress-chart-bar { min-width: 28px; }
-    
-    #addDayBtn, #addExerciseBtn { font-size: 1em; }
-    .edit-section-btn { width: 100%; }
+    .exercise-right {
+      justify-content: flex-end;
+    }
   }
+
+  /* Transitions */
+  .fade-enter { opacity: 0; }
+  .fade-enter-active { opacity: 1; transition: opacity 0.3s; }
 </style>
 </head>
 <body>
 
 <!-- AUTH SCREEN -->
 <div id="authScreen">
-  <h1>🏋️ План Тренировок</h1>
-  <p style="font-size: 1.1em; margin: 20px 0; line-height: 1.6;">
-    Персональный план тренировок на 12 недель с отслеживанием прогресса
-  </p>
-  <button id="loginBtn">Войти</button>
-  <p style="margin-top: 25px; font-size: 0.95em; color: #666; line-height: 1.6; max-width: 350px; margin-left: auto; margin-right: auto;">
-    💡 Придумайте свой уникальный логин.<br>
-    Он понадобится вам для сохранения тренировок и доступа к ним с любого устройства.
-  </p>
+  <div class="auth-card">
+    <h1>🏋️ План Тренировок</h1>
+    <p>Твой путь к лучшей форме начинается здесь.</p>
+    <button id="loginBtn">Начать тренировки</button>
+    <div style="margin-top: 24px; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+      Придумай уникальный логин, чтобы твои данные всегда были под рукой.
+    </div>
+  </div>
 </div>
 
 <!-- APP CONTAINER -->
-<div id="appContainer">
+<div id="appContainer" class="app-shell">
 
 <nav>
-  <button onclick="showToday()">Сегодня</button>
-  <button onclick="showPage('training')">Тренировки</button>
-  <button onclick="showPage('nutrition')">Питание</button>
-  <button onclick="showPage('supplements')">Добавки</button>
-  <button onclick="showPage('stats')">Статистика</button>
-  <button class="toggle-theme" onclick="toggleTheme()">Тема</button>
-  <button onclick="logout()" style="color: #ff4d4f;">Выход</button>
+  <button onclick="showToday()" class="active">
+    <span>🏠</span>
+    <span>Сегодня</span>
+  </button>
+  <button onclick="showPage('training')">
+    <span>💪</span>
+    <span>Тренинг</span>
+  </button>
+  <button onclick="showPage('nutrition')">
+    <span>🍎</span>
+    <span>Еда</span>
+  </button>
+  <button onclick="showPage('supplements')">
+    <span>💊</span>
+    <span>БАДы</span>
+  </button>
+  <button onclick="showPage('stats')">
+    <span>📊</span>
+    <span>Статы</span>
+  </button>
+  <button onclick="toggleTheme()">
+    <span>🌓</span>
+    <span>Тема</span>
+  </button>
+  <button onclick="logout()" style="color: var(--danger);">
+    <span>🚪</span>
+    <span>Выход</span>
+  </button>
 </nav>
 
 <!-- TRAINING -->
 <div id="training" class="container">
+  
+  <div class="card">
+    <button onclick="nextWeek()" class="next-week-btn">Завершить неделю и перейти к следующей</button>
+    <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+    <div id="trainingHeader" style="display: flex; justify-content: space-between; align-items: center;">
+      <h1 style="margin: 0;">План Роста</h1>
+      <span style="background: var(--accent-bg); padding: 4px 12px; border-radius: 20px; font-weight: 700; color: var(--primary);">Неделя <span id="currentWeekDisplay">1</span></span>
+    </div>
+  </div>
 
-  <button onclick="nextWeek()" class="next-week-btn">Следующая неделя</button>
-<div id="trainingEditor">
-
-  <h2>Дни тренировок</h2>
+<div id="trainingEditor" class="card">
+  <h2>Настройка плана</h2>
+  
+  <h3>Тренировочные дни</h3>
   <ul id="daysEditor" class="editable-list"></ul>
-  <button id="addDayBtn">+ Добавить день</button>
+  <button id="addDayBtn" class="btn btn-outline btn-full">+ Добавить тренировочный день</button>
   
   <div id="dayEditForm" class="edit-form">
-    <label>Название дня:</label>
-    <input type="text" id="dayNameInput" placeholder="Например: Понедельник">
-    <label>День недели:</label>
+    <h3>День тренировки</h3>
+    <label>Название</label>
+    <input type="text" id="dayNameInput" placeholder="Например: Спина и бицепс">
+    <label>День недели</label>
     <select id="dayWeekdaySelect">
       <option value="1">Понедельник</option>
       <option value="2">Вторник</option>
@@ -336,43 +630,43 @@
       <option value="0">Воскресенье</option>
     </select>
     <div class="form-buttons">
-      <button class="save-btn" id="saveDayBtn">💾 Сохранить</button>
-      <button class="cancel-btn" id="cancelDayBtn">❌ Отмена</button>
+      <button class="btn btn-primary btn-full" id="saveDayBtn">Сохранить</button>
+      <button class="btn btn-outline btn-full" id="cancelDayBtn">Отмена</button>
     </div>
   </div>
   
-  <hr>
+  <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border);">
 
-  <h2>Редактор упражнений</h2>
+  <h3>Упражнения</h3>
   <div id="daySelector"></div>
-  <button id="addExerciseBtn">+ Добавить упражнение</button>
+  <button id="addExerciseBtn" class="btn btn-outline btn-full">+ Добавить упражнение</button>
   
   <div id="exerciseEditForm" class="edit-form">
-    <label>Название упражнения:</label>
-    <input type="text" id="exerciseNameInput" placeholder="Например: Жим лёжа">
-    <label>Подходы:</label>
-    <input type="number" id="exerciseSetsInput" placeholder="Например: 4" min="1">
-    <label>Повторения:</label>
-    <input type="text" id="exerciseRepsInput" placeholder="Например: 8-10">
-    <div class="checkbox-wrapper">
+    <h3>Новое упражнение</h3>
+    <label>Название</label>
+    <input type="text" id="exerciseNameInput" placeholder="Например: Жим штанги">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div>
+        <label>Подходы</label>
+        <input type="number" id="exerciseSetsInput" placeholder="4" min="1">
+      </div>
+      <div>
+        <label>Повторения</label>
+        <input type="text" id="exerciseRepsInput" placeholder="8-10">
+      </div>
+    </div>
+    <div class="checkbox-wrapper" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
       <input type="checkbox" id="exerciseHasWeightInput">
-      <label for="exerciseHasWeightInput">Есть вес</label>
+      <label for="exerciseHasWeightInput" style="margin: 0;">Учитывать вес (кг)</label>
     </div>
     <div class="form-buttons">
-      <button class="save-btn" id="saveExerciseBtn">💾 Сохранить</button>
-      <button class="cancel-btn" id="cancelExerciseBtn">❌ Отмена</button>
+      <button class="btn btn-primary btn-full" id="saveExerciseBtn">Сохранить</button>
+      <button class="btn btn-outline btn-full" id="cancelExerciseBtn">Отмена</button>
     </div>
   </div>
   
   <ul id="exerciseEditorList" class="editable-list"></ul>
-  <hr>
-
 </div>
-
-  <h1>План Роста (12 недель)</h1>
-
-  <h2>Прогресс за неделю</h2>
-  <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
 
   <div id="dynamicTrainingDays"></div>
 
@@ -380,73 +674,83 @@
 
 <!-- NUTRITION -->
 <div id="nutrition" class="container">
-  <h1>Питание</h1>
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h1 style="margin: 0;">Питание</h1>
+      <button id="editNutritionBtn" class="btn btn-outline btn-sm">Редактировать</button>
+    </div>
 
-  <button id="editNutritionBtn" class="edit-section-btn">✏ Редактировать</button>
-
-  <textarea id="nutritionText" style="width:100%; min-height:180px; padding:12px; border-radius:8px; border:1px solid #aaa; font-size:1em; resize:vertical; display:none; background: var(--bg); color: var(--fg);"></textarea>
-
-  <div id="nutritionView" style="white-space:pre-wrap; background: var(--day-bg); padding:14px; border-radius:8px;"></div>
+    <textarea id="nutritionText" class="edit-form" style="width:100%; min-height:200px; display:none;"></textarea>
+    <div id="nutritionView" style="white-space:pre-wrap; line-height: 1.6; color: var(--text-secondary);"></div>
+  </div>
 </div>
 
 <!-- SUPPLEMENTS -->
 <div id="supplements" class="container">
-  <h1>Добавки</h1>
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+      <h1 style="margin: 0;">Добавки</h1>
+      <button id="editSupplementsBtn" class="btn btn-outline">Редактировать</button>
+    </div>
 
-  <button id="editSupplementsBtn" class="edit-section-btn">✏ Редактировать</button>
+    <div class="supplement-section card" style="background: var(--bg); border: none; margin-bottom: 12px;">
+      <h3>🌅 Завтрак</h3>
+      <textarea id="supplementBreakfastText" class="supplement-textarea" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 8px; display: none;"></textarea>
+      <div id="supplementBreakfastView" class="supplement-view" style="color: var(--text-secondary);"></div>
+    </div>
 
-  <div class="supplement-section">
-    <h3>🌅 Завтрак</h3>
-    <textarea id="supplementBreakfastText" class="supplement-textarea"></textarea>
-    <div id="supplementBreakfastView" class="supplement-view"></div>
+    <div class="supplement-section card" style="background: var(--bg); border: none; margin-bottom: 12px;">
+      <h3>🍽 Обед</h3>
+      <textarea id="supplementLunchText" class="supplement-textarea" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 8px; display: none;"></textarea>
+      <div id="supplementLunchView" class="supplement-view" style="color: var(--text-secondary);"></div>
+    </div>
+
+    <div class="supplement-section card" style="background: var(--bg); border: none; margin-bottom: 12px;">
+      <h3>🍴 Ужин</h3>
+      <textarea id="supplementDinnerText" class="supplement-textarea" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 8px; display: none;"></textarea>
+      <div id="supplementDinnerView" class="supplement-view" style="color: var(--text-secondary);"></div>
+    </div>
+
+    <div class="supplement-section card" style="background: var(--bg); border: none; margin-bottom: 12px;">
+      <h3>💪 Перед тренировкой</h3>
+      <textarea id="supplementPreWorkoutText" class="supplement-textarea" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 8px; display: none;"></textarea>
+      <div id="supplementPreWorkoutView" class="supplement-view" style="color: var(--text-secondary);"></div>
+    </div>
+
+    <div class="supplement-section card" style="background: var(--bg); border: none;">
+      <h3>🏋️ После тренировки</h3>
+      <textarea id="supplementPostWorkoutText" class="supplement-textarea" style="width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 8px; display: none;"></textarea>
+      <div id="supplementPostWorkoutView" class="supplement-view" style="color: var(--text-secondary);"></div>
+    </div>
   </div>
-
-  <div class="supplement-section">
-    <h3>🍽 Обед</h3>
-    <textarea id="supplementLunchText" class="supplement-textarea"></textarea>
-    <div id="supplementLunchView" class="supplement-view"></div>
-  </div>
-
-  <div class="supplement-section">
-    <h3>🍴 Ужин</h3>
-    <textarea id="supplementDinnerText" class="supplement-textarea"></textarea>
-    <div id="supplementDinnerView" class="supplement-view"></div>
-  </div>
-
-  <div class="supplement-section">
-    <h3>💪 Перед тренировкой</h3>
-    <textarea id="supplementPreWorkoutText" class="supplement-textarea"></textarea>
-    <div id="supplementPreWorkoutView" class="supplement-view"></div>
-  </div>
-
-  <div class="supplement-section">
-    <h3>🏋️ После тренировки</h3>
-    <textarea id="supplementPostWorkoutText" class="supplement-textarea"></textarea>
-    <div id="supplementPostWorkoutView" class="supplement-view"></div>
-  </div>
-
 </div>
 
 <!-- STATS -->
 <div id="stats" class="container">
-  <h1>Статистика</h1>
-<div style="margin:10px 0; display:flex; gap:10px; flex-wrap:wrap;">
-  <button onclick="resetAllStats()" class="del-btn">Сбросить всю статистику</button>
-</div>
-<div style="margin:15px 0;">
-  <button onclick="showStatsMode('week')" class="edit-btn" id="weekStatsBtn">📅 По неделям</button>
-  <button onclick="showStatsMode('total')" class="edit-btn" id="totalStatsBtn">📊 Общая</button>
-</div>
-  <label>
-    Неделя:
-    <select id="statsWeekSelect"></select>
-  </label>
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+      <h1 style="margin: 0;">Статистика</h1>
+      <button onclick="resetAllStats()" class="btn btn-danger">Сбросить всё</button>
+    </div>
 
-  <div id="weekSummary"></div>
-  <div id="totalStats" style="display:none;"></div>
+    <div style="display: flex; background: var(--bg); padding: 4px; border-radius: 12px; margin-bottom: 24px;">
+      <button onclick="showStatsMode('week')" class="btn btn-full" id="weekStatsBtn" style="background: var(--card);">Неделя</button>
+      <button onclick="showStatsMode('total')" class="btn btn-full" id="totalStatsBtn" style="background: transparent;">Общая</button>
+    </div>
 
-  <h3>Упражнения за неделю</h3>
-  <div id="rpeStats"></div>
+    <div id="weekStatsControls" style="margin-bottom: 20px;">
+      <label style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 8px; display: block;">Выберите неделю для анализа:</label>
+      <select id="statsWeekSelect" style="width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text);"></select>
+    </div>
+
+    <div id="weekSummary"></div>
+    <div id="totalStats" style="display:none;"></div>
+
+    <h3 style="margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px;">Лог упражнений</h3>
+    <div id="rpeStats"></div>
+  </div>
+</div>
+
 </div>
 
 </div>
