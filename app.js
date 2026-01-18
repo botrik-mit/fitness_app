@@ -246,13 +246,13 @@ function syncDOMToTrainingData() {
   });
   
   if (week) {
-    document.querySelectorAll('.task').forEach(checkbox => {
-      const id = checkbox.dataset.id;
-      if (id) {
+  document.querySelectorAll('.task').forEach(checkbox => {
+    const id = checkbox.dataset.id;
+    if (id) {
         const key = `task_w${week}_${id}`;
-        appData.tasks[key] = checkbox.checked;
-      }
-    });
+      appData.tasks[key] = checkbox.checked;
+    }
+  });
   }
 }
 
@@ -758,7 +758,7 @@ function renderTrainingPlan(){
       `;
 
       const exerciseRightClass = ex.hasWeight ? "exercise-right" : "exercise-right no-weight";
-      
+
       row.innerHTML = `
         <div class="exercise-left">${left}</div>
         <div class="${exerciseRightClass}">${right}</div>
@@ -1456,6 +1456,12 @@ function editDay(index) {
 function deleteDay(index) {
   if (!trainingData || !trainingData.days) return;
   if (!confirm("Удалить день и все упражнения?")) return;
+
+  const dayToDelete = trainingData.days[index];
+  if (dayToDelete && dayToDelete.exercises) {
+    // Явно очищаем массив упражнений перед удалением дня
+    dayToDelete.exercises = [];
+  }
 
   trainingData.days.splice(index, 1);
   selectedDayId = trainingData.days[0]?.id || null;
