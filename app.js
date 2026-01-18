@@ -1168,11 +1168,11 @@ function renderWeekDiary(selectedWeek) {
 
       exercisesHTML += `
         <div style="background:var(--card); padding:12px; border-radius:8px; margin-top:8px; border: 1px solid var(--border);">
-          <div style="font-weight:600; margin-bottom:4px;">${ex.name}</div>
+          <div style="font-weight:600; margin-bottom:4px; color:var(--text);">${ex.name}</div>
           <div style="font-size:0.875rem; color:var(--text-secondary);">
             ${weight ? `Вес: <b style="color:var(--text);">${weight} кг</b><br>` : ""}
             ${rpe ? `RPE: <b class="${getRPEClass(rpe)}">${rpe}</b><br>` : ""}
-            ${comment ? `<div style="margin-top:4px; font-style:italic;">💬 ${comment}</div>` : ""}
+            ${comment ? `<div style="margin-top:4px; font-style:italic; color:var(--text-secondary);">💬 ${comment}</div>` : ""}
           </div>
         </div>
       `;
@@ -1181,10 +1181,10 @@ function renderWeekDiary(selectedWeek) {
     box.innerHTML += `
       <div class="card" style="margin-bottom:16px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-          <strong style="font-size:1.1rem;">${day.title}</strong>
+          <strong style="font-size:1.1rem; color:var(--text);">${day.title}</strong>
           ${avgRPE ? `<span class="${getRPEClass(avgRPE)}" style="font-size:0.875rem;">ср. RPE: <b>${avgRPE}</b></span>` : ""}
         </div>
-        ${hasData ? exercisesHTML : `<div style="opacity:.5; font-size:0.875rem; text-align:center; padding:12px;">Нет данных для этой недели</div>`}
+        ${hasData ? exercisesHTML : `<div style="opacity:.5; font-size:0.875rem; text-align:center; padding:12px; color:var(--text-secondary);">Нет данных для этой недели</div>`}
       </div>
     `;
   });

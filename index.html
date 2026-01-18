@@ -90,10 +90,37 @@
     border-color: var(--border);
   }
 
+  body.dark .edit-form label {
+    color: var(--text-secondary);
+  }
+
+  body.dark .checkbox-wrapper label {
+    color: var(--text) !important;
+  }
+
+  body.dark .edit-form input[type="checkbox"] {
+    background: var(--card);
+    border-color: var(--border);
+  }
+
+  body.dark .edit-form input[type="checkbox"]:checked {
+    background: var(--success);
+    border-color: var(--success);
+  }
+
   body.dark .supplement-view,
   body.dark #nutritionView {
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
     background: var(--accent-bg);
+  }
+
+  body.dark .edit-form textarea {
+    color: var(--text) !important;
+  }
+
+  body.dark .supplement-textarea {
+    color: var(--text) !important;
+    background: var(--bg) !important;
   }
 
   body.dark .card {
@@ -552,6 +579,28 @@
     font-size: 1rem;
   }
 
+  .edit-form input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .checkbox-wrapper label {
+    margin: 0;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+  }
+
   .form-buttons {
     display: flex;
     gap: 12px;
@@ -802,8 +851,8 @@
       </div>
     </div>
     <div class="checkbox-wrapper" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-      <input type="checkbox" id="exerciseHasWeightInput">
-      <label for="exerciseHasWeightInput" style="margin: 0;">Учитывать вес (кг)</label>
+      <input type="checkbox" id="exerciseHasWeightInput" style="width: 22px; height: 22px; flex-shrink: 0;">
+      <label for="exerciseHasWeightInput" style="margin: 0; color: var(--text); cursor: pointer;">Учитывать вес (кг)</label>
     </div>
     <div class="form-buttons">
       <button class="btn btn-primary btn-full" id="saveExerciseBtn">Сохранить</button>
