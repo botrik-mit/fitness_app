@@ -320,6 +320,7 @@ function applyLoadedData() {
   if (!appData.weights) appData.weights = {};
   if (!appData.rpe) appData.rpe = {};
   if (!appData.comments) appData.comments = {};
+  if (!appData.exerciseNames) appData.exerciseNames = {};
   if (appData.progress === undefined || appData.progress === null) {
     appData.progress = 0;
   }
@@ -608,13 +609,20 @@ function saveExercise() {
   if (!day) return;
 
   if (editingExerciseIndex === null) {
+    const exId = Date.now();
     day.exercises.push({
-      id: Date.now(),
+      id: exId,
       name, sets, reps, hasWeight
     });
+    // Сохраняем название упражнения для статистики
+    if (!appData.exerciseNames) appData.exerciseNames = {};
+    appData.exerciseNames[exId] = name;
   } else {
     const ex = day.exercises[editingExerciseIndex];
     day.exercises[editingExerciseIndex] = { ...ex, name, sets, reps, hasWeight };
+    // Обновляем название упражнения для статистики
+    if (!appData.exerciseNames) appData.exerciseNames = {};
+    appData.exerciseNames[ex.id] = name;
   }
 
   afterDataChange();
@@ -1160,22 +1168,92 @@ function renderWeekDiary(selectedWeek) {
   const box = document.getElementById("rpeStats");
   box.innerHTML = "";
 
+  // Собираем все уникальные ID упражнений из appData для выбранной недели
+  const exerciseIdsWithData = new Set();
+  
+  // Собираем ID из всех источников данных
+  if (appData.weights) {
+    Object.keys(appData.weights).forEach(key => {
+      if (key.startsWith(`weight_w${selectedWeek}_`)) {
+        const exId = key.replace(`weight_w${selectedWeek}_`, '');
+        exerciseIdsWithData.add(exId);
+      }
+    });
+  }
+  if (appData.rpe) {
+    Object.keys(appData.rpe).forEach(key => {
+      if (key.startsWith(`rpe_w${selectedWeek}_`)) {
+        const exId = key.replace(`rpe_w${selectedWeek}_`, '');
+        exerciseIdsWithData.add(exId);
+      }
+    });
+  }
+  if (appData.comments) {
+    Object.keys(appData.comments).forEach(key => {
+      if (key.startsWith(`comment_w${selectedWeek}_`)) {
+        const exId = key.replace(`comment_w${selectedWeek}_`, '');
+        exerciseIdsWithData.add(exId);
+      }
+    });
+  }
+  if (appData.tasks) {
+    Object.keys(appData.tasks).forEach(key => {
+      if (key.startsWith(`task_w${selectedWeek}_`)) {
+        const exId = key.replace(`task_w${selectedWeek}_`, '');
+        if (appData.tasks[key] === true) {
+          exerciseIdsWithData.add(exId);
+        }
+      } else if (key.startsWith('task_') && !key.includes('_w')) {
+        // Старый формат
+        const exId = key.replace('task_', '');
+        if (appData.tasks[key] === true) {
+          exerciseIdsWithData.add(exId);
+        }
+      }
+    });
+  }
+
+  // Группируем упражнения по дням (если они есть в текущем плане) и отдельно удаленные
+  const exercisesByDay = new Map();
+  const deletedExercises = [];
+
+  exerciseIdsWithData.forEach(exId => {
+    // Ищем упражнение в текущем плане
+    let found = false;
+    for (const day of trainingData.days) {
+      const ex = day.exercises.find(e => e.id == exId);
+      if (ex) {
+        if (!exercisesByDay.has(day.id)) {
+          exercisesByDay.set(day.id, { day, exercises: [] });
+        }
+        exercisesByDay.get(day.id).exercises.push(ex);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      deletedExercises.push(exId);
+    }
+  });
+
+  // Отображаем упражнения по дням
   trainingData.days.forEach(day => {
+    if (!exercisesByDay.has(day.id)) return;
+    
+    const dayData = exercisesByDay.get(day.id);
     let exercisesHTML = "";
     let hasData = false;
 
-    const avgRPE = getAverageRPEForExercises(day.exercises, selectedWeek);
+    const avgRPE = getAverageRPEForExercises(dayData.exercises, selectedWeek);
 
-    day.exercises.forEach(ex => {
+    dayData.exercises.forEach(ex => {
       const weight = appData.weights[`weight_w${selectedWeek}_${ex.id}`];
       const rpe = appData.rpe[`rpe_w${selectedWeek}_${ex.id}`];
       const comment = appData.comments[`comment_w${selectedWeek}_${ex.id}`];
       const taskKey = `task_w${selectedWeek}_${ex.id}`;
       const oldTaskKey = `task_${ex.id}`;
-      // Поддержка старого формата для обратной совместимости
       const isCompleted = appData.tasks && (appData.tasks[taskKey] || appData.tasks[oldTaskKey]);
 
-      // Показываем упражнение если есть данные (вес, RPE, комментарий) или если оно выполнено
       if (!weight && !rpe && !comment && !isCompleted) return;
 
       hasData = true;
@@ -1187,22 +1265,65 @@ function renderWeekDiary(selectedWeek) {
             ${weight ? `Вес: <b style="color:var(--text);">${weight} кг</b><br>` : ""}
             ${rpe ? `RPE: <b class="${getRPEClass(rpe)}">${rpe}</b><br>` : ""}
             ${comment ? `<div style="margin-top:4px; font-style:italic; color:var(--text-secondary);">💬 ${comment}</div>` : ""}
-            ${!weight && !rpe && !comment && isCompleted ? `<div style="opacity:.7; font-size:0.875rem;">Выполнено</div>` : ""}
+            ${!weight && !rpe && !comment && isCompleted ? `<div style="opacity:.7; font-size:0.875rem; color:var(--success); font-weight:600;">Выполнено</div>` : ""}
           </div>
         </div>
       `;
     });
 
-    box.innerHTML += `
-      <div class="card" style="margin-bottom:16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-          <strong style="font-size:1.1rem; color:var(--text);">${day.title}</strong>
-          ${avgRPE ? `<span class="${getRPEClass(avgRPE)}" style="font-size:0.875rem;">ср. RPE: <b>${avgRPE}</b></span>` : ""}
+    if (hasData) {
+      box.innerHTML += `
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <strong style="font-size:1.1rem; color:var(--text);">${day.title}</strong>
+            ${avgRPE ? `<span class="${getRPEClass(avgRPE)}" style="font-size:0.875rem;">ср. RPE: <b>${avgRPE}</b></span>` : ""}
+          </div>
+          ${exercisesHTML}
         </div>
-        ${hasData ? exercisesHTML : `<div style="opacity:.5; font-size:0.875rem; text-align:center; padding:12px; color:var(--text-secondary);">Нет данных для этой недели</div>`}
-      </div>
-    `;
+      `;
+    }
   });
+
+  // Отображаем удаленные упражнения с их названиями
+  if (deletedExercises.length > 0) {
+    let deletedHTML = "";
+    deletedExercises.forEach(exId => {
+      const weight = appData.weights[`weight_w${selectedWeek}_${exId}`];
+      const rpe = appData.rpe[`rpe_w${selectedWeek}_${exId}`];
+      const comment = appData.comments[`comment_w${selectedWeek}_${exId}`];
+      const taskKey = `task_w${selectedWeek}_${exId}`;
+      const oldTaskKey = `task_${exId}`;
+      const isCompleted = appData.tasks && (appData.tasks[taskKey] || appData.tasks[oldTaskKey]);
+
+      if (!weight && !rpe && !comment && !isCompleted) return;
+
+      // Получаем название упражнения из appData.exerciseNames или используем fallback
+      const exerciseName = (appData.exerciseNames && appData.exerciseNames[exId]) || 'Удаленное упражнение';
+
+      deletedHTML += `
+        <div style="background:var(--card); padding:12px; border-radius:8px; margin-top:8px; border: 1px solid var(--border); opacity:0.9;">
+          <div style="font-weight:600; margin-bottom:4px; color:var(--text);">${exerciseName}</div>
+          <div style="font-size:0.875rem; color:var(--text-secondary);">
+            ${weight ? `Вес: <b style="color:var(--text);">${weight} кг</b><br>` : ""}
+            ${rpe ? `RPE: <b class="${getRPEClass(rpe)}">${rpe}</b><br>` : ""}
+            ${comment ? `<div style="margin-top:4px; font-style:italic; color:var(--text-secondary);">💬 ${comment}</div>` : ""}
+            ${!weight && !rpe && !comment && isCompleted ? `<div style="opacity:.7; font-size:0.875rem; color:var(--success); font-weight:600;">Выполнено</div>` : ""}
+          </div>
+        </div>
+      `;
+    });
+
+    if (deletedHTML) {
+      box.innerHTML += `
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <strong style="font-size:1.1rem; color:var(--text-secondary);">Удаленные упражнения</strong>
+          </div>
+          ${deletedHTML}
+        </div>
+      `;
+    }
+  }
 }
 function getAverageRPEForExercises(exercises, week) {
   let sum = 0;
