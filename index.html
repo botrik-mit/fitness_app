@@ -845,8 +845,12 @@
   </div>
 
 <div id="trainingEditor" class="card">
-  <h2>Настройка плана</h2>
+  <h2 style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;" onclick="toggleTrainingEditor()">
+    <span>Настройка плана</span>
+    <span id="trainingEditorToggle" style="font-size: 1.2rem; transition: transform 0.3s;">▼</span>
+  </h2>
   
+  <div id="trainingEditorContent" style="display: none;">
   <h3>Тренировочные дни</h3>
   <ul id="daysEditor" class="editable-list"></ul>
   <button id="addDayBtn" class="btn btn-outline btn-full">+ Добавить тренировочный день</button>
@@ -902,6 +906,7 @@
   </div>
   
   <ul id="exerciseEditorList" class="editable-list"></ul>
+  </div>
 </div>
 
   <div id="dynamicTrainingDays"></div>
@@ -982,8 +987,10 @@
     <div id="weekSummary"></div>
     <div id="totalStats" style="display:none;"></div>
 
-    <h3 style="margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px;">Лог упражнений</h3>
-    <div id="rpeStats"></div>
+    <div id="exerciseLogSection" style="display: none;">
+      <h3 style="margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px;">Лог упражнений</h3>
+      <div id="rpeStats"></div>
+    </div>
   </div>
 </div>
 

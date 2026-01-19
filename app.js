@@ -1411,6 +1411,8 @@ function showStatsMode(mode) {
     
     document.getElementById("weekStatsControls").style.display = "block";
     weekSummary.style.display = "block";
+    const exerciseLogSection = document.getElementById("exerciseLogSection");
+    if (exerciseLogSection) exerciseLogSection.style.display = "block";
     document.getElementById("rpeStats").style.display = "block";
     totalStats.style.display = "none";
 
@@ -1423,6 +1425,8 @@ function showStatsMode(mode) {
 
     document.getElementById("weekStatsControls").style.display = "none";
     weekSummary.style.display = "none";
+    const exerciseLogSection = document.getElementById("exerciseLogSection");
+    if (exerciseLogSection) exerciseLogSection.style.display = "none";
     document.getElementById("rpeStats").style.display = "none";
     totalStats.style.display = "block";
 
@@ -1649,6 +1653,22 @@ function deleteDay(index) {
   renderDaysEditor();
   renderDaySelector();
   renderTrainingPlan();
+}
+
+/* ==========================================
+   ПЕРЕКЛЮЧЕНИЕ БЛОКА "НАСТРОЙКА ПЛАНА"
+========================================== */
+function toggleTrainingEditor() {
+  const content = document.getElementById("trainingEditorContent");
+  const toggle = document.getElementById("trainingEditorToggle");
+  
+  if (content.style.display === "none") {
+    content.style.display = "block";
+    toggle.style.transform = "rotate(0deg)";
+  } else {
+    content.style.display = "none";
+    toggle.style.transform = "rotate(-90deg)";
+  }
 }
 
 /* ==========================================
